@@ -18,6 +18,9 @@ class processed_data():
         self.df = pd.DataFrame(dictionary)
         self.df_train = pd.DataFrame(dictionary)
         self.df_test = pd.DataFrame(dictionary)
+        self.df = self.df.astype('object')
+        self.df_train = self.df_train.astype('object')
+        self.df_test = self.df_test.astype('object')
         self.frac = frac
         
     def process_rawdata(self):
@@ -76,7 +79,7 @@ class processed_data():
                                 edges_1 += [node2idx[-1*xi]]
                                 edges_2 += [node2idx[-1*xi]]
                                 edges_2 += [node2idx[xi]]
-                                edge_attr += [[1,0]]
+                                edge_attr += [[1,0], [1,0]]
                     # build edges between clause and var
                     for clause in clauses:
                         clause_vars = clause.split(" ")
@@ -88,7 +91,7 @@ class processed_data():
                             edges_2 += [node2idx[xi]]
                             edges_2 += [count]
                             
-                            edge_attr += [[0,1]] 
+                            edge_attr += [[0,1],[0,1]] 
                         count += 1
                     
                     f.close()
@@ -102,7 +105,7 @@ class processed_data():
                     if self.seperate and (info[0] == "UF250" or info[0] == "UUF250"):
                         self.df_test.loc[len(self.df_test)] = [node_values, [edges_1, edges_2], [edge_attr, edge_attr],[label]]
                     else:
-                        self.df.loc[len(self.df)] = [node_values, [edges_1, edges_2], [edge_attr, edge_attr],[label]]
+                        self.df.loc[len(self.df)] = [node_values, [edges_1, edges_2], [edge_attr],[label]]
 
         print("satisfiable cnfs: ", self.sat)
         print("unsatisfiable cnfs: ", self.unsat)
@@ -124,5 +127,5 @@ class processed_data():
     
 
 
-test = processed_data("./datatest")
-test.process_rawdata()
+#test = processed_data("./datatest")
+#test.process_rawdata()
