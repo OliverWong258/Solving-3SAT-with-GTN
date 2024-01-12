@@ -51,7 +51,7 @@ class dataset(Dataset):
             return torch.load(os.path.join(self.processed_dir, f'test_data_{index}.pt'))
         else:
             return torch.load(os.path.join(self.processed_dir, f'train_data_{index}.pt'))
-
+        
 """
 test_data = processed_data("./datatest")
 test_data.process_rawdata()
