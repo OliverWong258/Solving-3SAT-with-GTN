@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from tqdm import tqdm
 import random
+import numpy as np
 
 
 dictionary = {"nodeFeatures": [],
@@ -85,7 +86,7 @@ class processed_data():
                             edge_attr += [[0,1]]
                             
                         count += 1
-                        
+                    """
                     xs = []
                     for i in node_freq:
                         sym = int(random.choice([1,-1]))
@@ -94,7 +95,12 @@ class processed_data():
                     node_values = xs
                     node_values += [[-i] for [i] in xs]
                     node_values += [[1] for _ in range(clause_num)]
-
+                    """
+                    x_i = [[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, var_num)]
+                    node_values = x_i
+                    node_values += [[-i] for [i] in x_i]
+                    node_values += [[1] for _ in range(0, clause_num)]
+                    
                     f.close()
                     
                     if self.seperate and (info[0] == "UF250" or info[0] == "UUF250"):
