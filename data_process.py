@@ -106,7 +106,7 @@ class process_raw():
         
         pos_weight = num_unsat / num_sat
         print("Positive weitht: ", pos_weight)
-        if self.separate_test:
+        if self.separate:
             self.df_train = self.df
             print('Training set size: ', len(self.df))
             print('Test set size: ', len(self.df_test))
