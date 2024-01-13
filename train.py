@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
 import torch
 from torch_geometric.loader import DataLoader
-from sklearn.metrics import confusion_matrix, f1_score, accuracy_score, precision_score, recall_score, roc_auc_score, \
-    RocCurveDisplay, precision_recall_curve, PrecisionRecallDisplay
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
-from dataset import SAT3Dataset
-from model import GNN
+from model import network
 import warnings
 import os
 warnings.filterwarnings('ignore')
@@ -63,8 +58,8 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
 
     # load the GNN model
     print("Model loading...")
-    model = GNN(feature_size=train_dataset[0].x.shape[1], model_edge_dim=model_edge_dim, embedding_size=embedding_size, 
-                n_heads=n_heads, n_layers=n_layers, dropout_rate=dropout_rate, dense_neurons=dense_neurons)
+    model = network(feature_size=train_dataset[0].x.shape[1], model_edge_dim=model_edge_dim, embedding_size=embedding_size, 
+                n_heads=n_heads, layers=n_layers, dropout=dropout_rate, linear_size=dense_neurons)
     model = model.to(device)
     print("Model loading completed\n")
 

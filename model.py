@@ -4,48 +4,49 @@ from torch.nn import Linear, BatchNorm1d, ModuleList
 from torch_geometric.nn import TransformerConv
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
 
-torch.manual_seed(15)
 
+class network(torch.nn.Module):
+    def __init__(self, feature_size, model_edge_dim, embedding_size, n_heads, layers, dropout, linear_size):
+        super(network, self).__init__()
+        self.feature_size = feature_size        # 初始节点特征维度
+        self.edge_dim = model_edge_dim          # 边特征维度
+        self.n_layers = layers                  # 循环层数
+        self.embedding_size = embedding_size    # 图卷积层映射维度
+        self.n_heads = n_heads                  # 注意力头数
+        self.dropout = dropout                  
+        self.linear_size = linear_size          # 末尾全连接层维度
+        
+        
+        self.init_conv_layer = TransformerConv(self.feature_size, self.embedding_size, heads=self.n_heads, 
+                                               dropout=self.dropout, edge_dim=self.edge_dim, beta=True)
+        self.init_linear_layer = Linear(self.embedding_size * self.n_heads, self.embedding_size)
+        self.init_bn_layer = BatchNorm1d(self.embedding_size)
 
-class GNN(torch.nn.Module):
-    def __init__(self, feature_size, model_edge_dim, embedding_size, n_heads, n_layers, dropout_rate, dense_neurons):
-        super(GNN, self).__init__()
-        # get model parameters (used for tuning)
-        self.n_layers = n_layers
-        edge_dim = model_edge_dim
-
-        self.conv_layers = ModuleList([])
-        self.transf_layers = ModuleList([])
-        self.bn_layers = ModuleList([])
-
-        self.conv1 = TransformerConv(feature_size, embedding_size, heads=n_heads,
-                                     dropout=dropout_rate, edge_dim=edge_dim, beta=True)
-        self.transf1 = Linear(embedding_size * n_heads, embedding_size)
-        # Batch Normalization after the activation function of the output layer
-        self.bn1 = BatchNorm1d(embedding_size)
-
-        # other layers based on number parameter tuning
-        for i in range(self.n_layers):
-            self.conv_layers.append(TransformerConv(embedding_size, embedding_size, heads=n_heads,
-                                                    dropout=dropout_rate, edge_dim=edge_dim, beta=True))
-            self.transf_layers.append(Linear(embedding_size * n_heads, embedding_size))
-            self.bn_layers.append(BatchNorm1d(embedding_size))
+        self.conv_layers = ModuleList([])       # 图卷积层
+        self.linear_layers = ModuleList([])     # 全连接层
+        self.bn_layers = ModuleList([])         # 正则化层
+        
+        for _ in range(self.n_layers):
+            self.conv_layers.append(TransformerConv(self.embedding_size, self.embedding_size, heads=self.n_heads, 
+                                                    dropout=self.dropout, edge_dim=self.edge_dim, beta=True))
+            self.linear_layers.append(Linear(self.embedding_size * self.n_heads, self.embedding_size))
+            self.bn_layers.append(BatchNorm1d(self.embedding_size))
 
         # final linear layers
-        self.linear1 = Linear(embedding_size * 2, dense_neurons)
-        self.linear2 = Linear(dense_neurons, int(dense_neurons / 2))
-        self.linear3 = Linear(int(dense_neurons / 2), 1)
+        self.linear_layer1 = Linear(embedding_size * 2, linear_size)
+        self.linear_layer2 = Linear(linear_size, int(linear_size / 2))
+        self.linear_layer3 = Linear(int(linear_size / 2), 1)
 
     def forward(self, x, edge_attr, edge_index, batch_index):
-        x = self.conv1(x, edge_index, edge_attr)
-        x = torch.relu(self.transf1(x))
-        x = self.bn1(x)
+        x = self.init_conv_layer(x, edge_index, edge_attr)
+        x = torch.relu(self.init_linear_layer(x))
+        x = self.init_bn_layer(x)
 
         # holds the intermediate graph representations
         global_representation = []
         for i in range(self.n_layers):
             x = self.conv_layers[i](x, edge_index, edge_attr)
-            x = torch.relu(self.transf_layers[i](x))
+            x = torch.relu(self.linear_layers[i](x))
             x = self.bn_layers[i](x)
 
             global_representation.append(torch.cat([gmp(x, batch_index), gap(x, batch_index)], dim=1))
@@ -53,8 +54,8 @@ class GNN(torch.nn.Module):
         x = sum(global_representation)
 
         # output block
-        x = torch.relu(self.linear1(x))
-        x = torch.relu(self.linear2(x))
-        x = torch.sigmoid(self.linear3(x))
+        x = torch.relu(self.linear_layer1(x))
+        x = torch.relu(self.linear_layer2(x))
+        x = self.linear_layer3(x)
 
         return x
