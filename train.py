@@ -147,10 +147,9 @@ def evaluation(model, test_loader, criterion, plot_var="same", print_metrics=Fal
     return running_loss / step
 
 
-def training(pos_weight, model_name, make_err_logs=False):
+def training(dataset, pos_weight, model_name, make_err_logs=False):
     # loading the dataset
-    print("Dataset loading...")
-    dataset = SAT3Dataset(root="./", filename="store.h5")
+    dataset = dataset
 
     # we have already kept a different test set, so split into train and validation 80% - 20%
     train_set_size = np.ceil(len(dataset) * 0.8)

@@ -8,38 +8,13 @@ import os
 
 
 class SAT3Dataset(Dataset):
-    def __init__(self, root, filename, test=False, transform=None, pre_transform=None):
-        self.filename = filename
+    def __init__(self, root, dataframe, test=False, transform=None, pre_transform=None):
         self.test = test
-        self.data = None
+        self.data = dataframe
         super(SAT3Dataset, self).__init__(root, transform, pre_transform)
 
-    @property
-    def raw_file_names(self):
-        return self.filename
-
-    @property
-    def processed_file_names(self):
-        # If these files are found in raw_dir, processing is skipped
-        store = pd.HDFStore(os.path.join(self.raw_dir, self.filename))
-        self.data = store['df'].reset_index()
-        store.close()
-
-        if self.test:
-            return [f'data_test_{i}.pt' for i in list(self.data.index)]
-        else:
-            return [f'data_{i}.pt' for i in list(self.data.index)]
-
-    def download(self):
-        # there won't be any need to download the data
-        pass
-
     def process(self):
-        # open the dataframe
-        store = pd.HDFStore(os.path.join(self.raw_dir, self.filename))
-        self.data = store['df'].reset_index()
-        store.close()
-
+        print("Dataset loading...")
         for index, cnf in tqdm(self.data.iterrows(), total=self.data.shape[0]):
             # get node features (here we actually don't have many)
             node_feats = torch.tensor(cnf["variablesSymb"], dtype=torch.float)

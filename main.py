@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from dataprocessing import dataset_processing
+from dataprocessing import process_raw
 import sys
 from train import training
 from test import test
 import os, shutil
+from dataset import SAT3Dataset
 
 
 def delete_folder_contents(folders):
@@ -17,8 +18,10 @@ def delete_folder_contents(folders):
 
 def main():
     delete_folder_contents(["./raw", "./processed"])
-    pos_weight = dataset_processing(separate_test=False)
-    training(pos_weight=pos_weight, model_name='./final_model_same_sets.pth', make_err_logs=True)
+    raw_data = process_raw()
+    pos_weight = raw_data.dataset_processing(separate_test=False)
+    dataset = SAT3Dataset(root="./", dataframe=raw_data.df)
+    training(dataset=dataset, pos_weight=pos_weight, model_name='./final_model_same_sets.pth', make_err_logs=True)
 
 
 
