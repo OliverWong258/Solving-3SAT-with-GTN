@@ -17,11 +17,11 @@ dictionary = {"numberOfVariables": [],
                       "label": []}
 
 class process_raw():
-    def __init__(self, directory = "./data", seperate_test = False):
+    def __init__(self, directory = "./data", separate_test = False):
         self.df = pd.DataFrame(dictionary)
         self.df_test = pd.DataFrame(dictionary)
         self.directory = directory
-        self.seperate_test = seperate_test
+        self.separate_test = separate_test
         
     def dataset_processing(self):
         print("Start the data processing...\n")
@@ -43,7 +43,7 @@ class process_raw():
                 y = 0 if dir_info[0][:3] == "UUF" else 1
 
                 # we want to see the balancing of the training dataset
-                if not (self.separate_test and (dir_info[0] == "UF250" or dir_info[0] == "UUF250")):
+                if not (self.seperate_test and (dir_info[0] == "UF250" or dir_info[0] == "UUF250")):
                     if y == 1:
                         satisfiable_num += int(dir_info[2])
                     else:
