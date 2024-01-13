@@ -18,7 +18,7 @@ def delete_folder_contents(folders):
 def main():
     delete_folder_contents(["./raw", "./processed"])
     pos_weight = dataset_processing(separate_test=False)
-    training(model_name='./final_model_same_sets.pth', make_err_logs=True)
+    training(pos_weight=pos_weight, model_name='./final_model_same_sets.pth', make_err_logs=True)
 
 
 
