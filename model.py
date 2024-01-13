@@ -8,14 +8,10 @@ torch.manual_seed(15)
 
 
 class GNN(torch.nn.Module):
-    def __init__(self, feature_size, model_edge_dim):
+    def __init__(self, feature_size, model_edge_dim, embedding_size, n_heads, n_layers, dropout_rate, dense_neurons):
         super(GNN, self).__init__()
         # get model parameters (used for tuning)
-        embedding_size = 64
-        n_heads = 1
-        self.n_layers = 2
-        dropout_rate = 0.1
-        dense_neurons = 128
+        self.n_layers = n_layers
         edge_dim = model_edge_dim
 
         self.conv_layers = ModuleList([])
@@ -59,6 +55,6 @@ class GNN(torch.nn.Module):
         # output block
         x = torch.relu(self.linear1(x))
         x = torch.relu(self.linear2(x))
-        x = self.linear3(x)
+        x = torch.sigmoid(self.linear3(x))
 
         return x

@@ -16,8 +16,11 @@ warnings.filterwarnings('ignore')
 MAX_NUMBER_OF_EPOCHS = 51
 EARLY_STOPPING_COUNTER = 30
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(f'Training on: {device}')
+embedding_size = 64
+n_heads = 1
+n_layers = 2
+dropout_rate = 0.1
+dense_neurons = 128
 
 
 def plot_errors(errors):
@@ -37,91 +40,10 @@ def plot_errors(errors):
     plt.savefig('./plots/train_valid_error.png')
     plt.close()
 
-
-def metrics(y_pred, y, plot_var, y_proba=[]):
-    print(f"\n Confusion matrix: \n {confusion_matrix(y_pred, y)}")
-    cm = confusion_matrix(y_pred, y)
-    classes = ["UNSATISFIABLE", "SATISFIABLE"]
-    ax = plt.axes()
-    ax.set_title("Confusion Matrix")
-    plt.close()
-    df_cfm = pd.DataFrame(cm, index=classes, columns=classes)
-    plt.figure(figsize=(10, 7))
-    cfm_plot = sns.heatmap(df_cfm, annot=True, cmap='Blues', fmt='g', ax=ax)
-    cfm_plot.figure.savefig(f'./plots/cm_{plot_var}.png')
-    plt.close()
-
-    # compute metrics
-    print(f"F1 Score  : {f1_score(y, y_pred):.4f}")
-    print(f"Accuracy  : {accuracy_score(y, y_pred):.4f}")
-    print(f"Precision : {precision_score(y, y_pred):.4f}")
-    print(f"Recall    : {recall_score(y, y_pred):.4f}")
-    # auc score
-
-    one_class = False
-    if sum(y) == len(y) or sum(y) == 0:
-        one_class = True
-
-    if not one_class:
-        print(f"ROC AUC   : {roc_auc_score(y, y_pred):.4f}")
-
-        # plot roc - auc curve
-        RocCurveDisplay.from_predictions(y, y_pred)
-        plt.plot([0, 1], [0, 1], "k--", label="chance level (AUC = 0.5)")
-        plt.axis("square")
-        plt.xlabel("FP Rate")
-        plt.ylabel("TP Rate")
-        plt.legend()
-        plt.title("ROC-AUC curve")
-        plt.savefig(f'./plots/roc_auc_{plot_var}.png')
-        plt.close()
-
-    if len(y_proba) > 0:
-        prec, recall, _ = precision_recall_curve(probas_pred=y_proba, y_true=y, pos_label=1.0)
-        pr_display = PrecisionRecallDisplay(precision=prec, recall=recall).plot()
-        plt.close()
-        fig, ax = plt.subplots()
-        ax.set_title("Precision-Recall Curve")
-        pr_display.plot(ax=ax)
-        fig.figure.savefig(f'./plots/pr_{plot_var}.png')
-        plt.close()
-
-
-
-def evaluation(model, test_loader, criterion, plot_var="same", print_metrics=False):
-    predictions = []
-    predictions_proba = []
-    labels = []
-    running_loss = 0.0
-    step = 0
-
-    torch.manual_seed(15)
-    for batch in test_loader:
-        batch.to(device)
-        # make prediction
-        prediction = model(batch.x.float(), batch.edge_attr.float(), batch.edge_index, batch.batch)
-        # calculate loss
-        loss = criterion(torch.squeeze(prediction), batch.y.float())
-
-        running_loss += loss.item()
-        step += 1
-
-        if print_metrics:
-            predictions.append(np.rint(torch.sigmoid(prediction).cpu().detach().numpy()))
-            predictions_proba.append(torch.sigmoid(prediction).cpu().detach().numpy())
-            labels.append(batch.y.cpu().detach().numpy())
-
-    if print_metrics:
-        predictions = np.concatenate(predictions).ravel()
-        labels = np.concatenate(labels).ravel()
-        predictions_proba = np.concatenate(predictions_proba).ravel()
-
-        metrics(predictions, labels, plot_var, predictions_proba)
-
-    return running_loss / step
-
-
 def training(dataset, pos_weight, model_name, make_err_logs=False):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(f'Training on: {device}')
+    
     # loading the dataset
     dataset = dataset
 
@@ -141,7 +63,8 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
 
     # load the GNN model
     print("Model loading...")
-    model = GNN(feature_size=train_dataset[0].x.shape[1], model_edge_dim=model_edge_dim)
+    model = GNN(feature_size=train_dataset[0].x.shape[1], model_edge_dim=model_edge_dim, embedding_size=embedding_size, 
+                n_heads=n_heads, n_layers=n_layers, dropout_rate=dropout_rate, dense_neurons=dense_neurons)
     model = model.to(device)
     print("Model loading completed\n")
 
@@ -166,7 +89,6 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
     # the following are just for reporting reasons
     errors = []
     stopped = False
-    early_stopping = MAX_NUMBER_OF_EPOCHS
 
     for epoch in range(MAX_NUMBER_OF_EPOCHS):
 
@@ -240,34 +162,3 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
         plot_errors(errors)
 
     return final_valid_loss
-
-
-def testing(params, model_name, plot_var="same", test_set="store_test.h5"):
-    # loading the dataset
-    print("Dataset loading...")
-
-    # dataset is different, just load it
-    dataset = SAT3Dataset(root="./", filename=test_set, test=True)
-    test_loader = DataLoader(dataset, batch_size=params["batch_size"])  # no need to shuffle the test set
-
-    print("Dataset loading completed\n")
-
-    params["model_edge_dim"] = dataset[0].edge_attr.shape[1]
-
-    # see test set's metrics in the best (not overfitted) model
-    print("Model loading...")
-    model_params = {k: v for k, v in params.items() if k.startswith("model_")}
-    best_model = GNN(feature_size=dataset[0].x.shape[1], model_params=model_params)
-    best_model.load_state_dict(torch.load(model_name, map_location="cuda:0"))
-    best_model.to(device)
-    best_model.eval()
-    print("Model loading completed\n")
-
-    weight = torch.tensor([params["pos_weight"]], dtype=torch.float32).to(device)
-
-    # define a loss function
-    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=weight)
-
-    print("\nTest set metrics:")
-    test_loss = evaluation(best_model, test_loader, criterion, plot_var, print_metrics=True)
-    print(f"Test Loss : {test_loss}")

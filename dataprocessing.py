@@ -56,7 +56,7 @@ class process_raw():
                 #     2*numberOfVariables - 2*numberOfVariables + numberOfClauses   : c_1 - c_m
 
                 nodes = [i for i in range(0, 2 * number_of_variables + number_of_clauses)]
-                x_i = [[0.5] for _ in range(0, number_of_variables)]#[[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, number_of_variables)]
+                x_i = [[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, number_of_variables)]
                 node_values = x_i
                 node_values += [[-i] for [i] in x_i]
                 node_values += [[1] for _ in range(0, number_of_clauses)]
@@ -134,7 +134,7 @@ class process_raw():
         else:
             self.df_tr = self.df.sample(frac=self.frac)
             self.df_test = self.df.drop(self.df_tr.index)
-            print(f'Training set size: {len(self.df)}')
+            print(f'Training set size: {len(self.df_tr)}')
             print(f'Test set size: {len(self.df_test)}')
 
         print("\nProcessing completed.")
