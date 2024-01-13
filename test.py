@@ -34,7 +34,7 @@ def test(testing_dataset, pos_weight, model_path):
         test_loss += loss.item()
         test_num += 1
         
-        predictions.append(np.rint(prediction.cpu().detach().numpy()))
+        predictions.append(np.rint(torch.sigmoid(prediction).cpu().detach().numpy()))
         labels.append(batch.y.cpu().detach().numpy())
         
     predictions = np.concatenate(predictions).ravel()
