@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from dataprocessing import process_raw
+from data_process import process_raw
 import sys
 from train import training
 from test import test
