@@ -45,7 +45,9 @@ def train(dataset, pos_weight, model_path):
     
     pos_weight = torch.tensor(pos_weight, dtype=torch.float32).to(device)
     criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-    print("model parameters: ", model.parameters())
+    print("model parameters: ")
+    for param in model.parameters():
+        print(param)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay, amsgrad=False)
     # …Ë÷√—ßœ∞¬ À•ºı
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
