@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 MAX_NUMBER_OF_EPOCHS = 51
-EARLY_STOPPING_COUNTER = 15
+EARLY_STOPPING_COUNTER = 30
 
 # set seed so that the train-valid sets are always the same
 torch.manual_seed(15)
@@ -39,8 +39,7 @@ def plot_errors(errors, early_stopping):
     plt.title('Early stopping in selected model')
 
     plt.legend()
-    plt.savefig('./plots/train_valid_error.png')
-    plt.close()
+    plt.show()
 
 
 def metrics(y_pred, y, plot_var, y_proba=[]):
