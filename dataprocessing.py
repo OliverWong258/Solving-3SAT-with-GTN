@@ -130,6 +130,8 @@ class processed_data():
         print("\nDataProcessing completed.")
         return (self.unsat / self.sat)
     
+        print("max frequency: ", max(global_node_values))
+    
 
 """
 test = processed_data("./data")
