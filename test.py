@@ -9,7 +9,7 @@ warnings.filterwarnings('ignore')
 # ³¬²ÎÊý
 batch_size = 64
 
-def test(model_path, testing_dataset, pos_weight):
+def test(testing_dataset, pos_weight, model_path):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f'Testing on: {device}')
     

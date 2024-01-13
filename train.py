@@ -19,7 +19,7 @@ dropout_rate = 0.1
 dense_neurons = 128
 batch_size = 64
 
-def training(dataset, pos_weight, model_name, make_err_logs=False):
+def train(dataset, pos_weight, model_path):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('Training on: ', device)
 
@@ -116,7 +116,7 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
                     final_train_loss = training_loss
                     
                     # 保存当前模型
-                    torch.save(model, model_name)
+                    torch.save(model, model_path)
 
                     early_stop_cnt = 0
                 else:

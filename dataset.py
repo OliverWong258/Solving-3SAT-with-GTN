@@ -3,7 +3,7 @@ from torch_geometric.data import Dataset, Data
 from tqdm import tqdm
 import numpy as np
 import torch
-import os
+import os, shutil
 from data_process import process_raw
 
 
@@ -55,3 +55,13 @@ class SAT3Dataset(Dataset):
             return torch.load(os.path.join(self.processed_dir, f'data_test_{index}.pt'))
         else:
             return torch.load(os.path.join(self.processed_dir, f'data_train_{index}.pt'))
+        
+    def delete_folder_contents(self):
+        for filename in os.listdir(self.processed_dir):
+            file_path = os.path.join(self.processed_dir, filename)
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+                
+        print("Delete files in ", self.processed_dir)

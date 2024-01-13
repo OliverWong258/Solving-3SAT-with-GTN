@@ -1,27 +1,32 @@
 # -*- coding: utf-8 -*-
-from data_process import process_raw
 import sys
-from train import training
+from train import train
 from test import test
-import os, shutil
+import os
 from dataset import SAT3Dataset
 
-
-def delete_folder_contents(folders):
-    for folder in folders:
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-
 def main():
-    delete_folder_contents(["./processed"])
-    #raw_data = process_raw()
-    #pos_weight = raw_data.dataset_processing()
-    dataset = SAT3Dataset(root="./")
-    training(dataset=dataset, pos_weight=dataset.pos_weight, model_name='./final_model_same_sets.pth', make_err_logs=True)
+    if not os.path.exists("./processed"):
+        os.mkdir("./processed")
+        
+    if not os.path.exists("./models"):
+        os.mkdir("./models")
+        
+    if len(sys.argv) < 3:
+        print("Usage: python main.py <operation>")
+        sys.exit(1)
+        
+    operation = sys.argv[1]
+    model_path = sys.argv[2]
+    model_path = "./models/" + model_path
+    
+    if operation == "train":
+        dataset = SAT3Dataset(root="./")
+        train(dataset=dataset, pos_weight=dataset.pos_weight, model_path=model_path)
+        
+    elif operation == "test":
+        dataset = SAT3Dataset(root="./", test=True)
+        test(testing_dataset=dataset, pos_weight=dataset.pos_weight, model_path=model_path)
 
 
 
