@@ -128,9 +128,9 @@ class processed_data():
             print("Testing set size: ", len(self.df_test))
             
         print("\nDataProcessing completed.")
+        print("max frequency: ", max(global_node_values))
         return (self.unsat / self.sat)
     
-        print("max frequency: ", max(global_node_values))
     
 
 """
