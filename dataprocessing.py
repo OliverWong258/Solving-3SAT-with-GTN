@@ -2,8 +2,8 @@
 import os
 import pandas as pd
 from tqdm import tqdm
+import random
 
-global_node_values = []
 
 dictionary = {"nodeFeatures": [],
                 "edges": [],
@@ -50,67 +50,57 @@ class processed_data():
                     clauses = [line for line in clauses if line != '']
                     
                     node_values = [] # idx 2 node values(the frequency)
+                    node_freq = []
                     
                     edges_1 = [] # start node idx of each edge
                     edges_2 = [] # end node idx of each edge
                     edge_attr = []
                     
-                    node2idx = {} # var node 2 idx
-                    idx2value = {} # var idx 2 value
-                    count = 0 # node num
                     
+                    for i in range(var_num):
+                        tmp = i + var_num
+                        edges_1 += [i]
+                        edges_1 += [tmp]
+                        edges_2 += [tmp]
+                        edges_2 += [i]
+                        
+                        edge_attr += [[1,0]]
+                        
+                        node_freq += [0]
+                    
+                    count = 0
                     # build the dictionary
                     for clause in clauses:
                         clause_vars = clause.split(" ")
                         clause_vars = [int(var) for var in clause_vars]
                         
-                        for var in clause_vars:
-                            if not var in node2idx.keys():
-                                node2idx[var] = count
-                                idx2value[count] = 2     # leave 1 for clause
-                                count += 1
-                            else:
-                                idx2value[node2idx[var]] += 1
-                    for i in range(count):
-                        node_values.append(idx2value[i])
-                    global global_node_values
-                    global_node_values += node_values
-                    
-                    # build edges between var and -var
-                    for xi in node2idx.keys():
-                        if xi > 0:
-                            if (-1*xi) in node2idx.keys():
-                                edges_1 += [node2idx[xi]]
-                                edges_1 += [node2idx[-1*xi]]
-                                edges_2 += [node2idx[-1*xi]]
-                                edges_2 += [node2idx[xi]]
-                                edge_attr += [[1,0], [1,0]]
-                    # build edges between clause and var
-                    for clause in clauses:
-                        clause_vars = clause.split(" ")
-                        clause_vars = [int(var) for var in clause_vars]
-                        node_values.append(1) # 1 is the value for clause node
-                        for xi in clause_vars:
-                            edges_1 += [count]
-                            edges_1 += [node2idx[xi]]
-                            edges_2 += [node2idx[xi]]
-                            edges_2 += [count]
+                        for var in clause_vars: 
+                            node_freq[abs(var)-1] += 1
+                            tmp = [var-1] if var > 0 else [abs(var) + var_num - 1]
+                            edges_1 += [count + 2*var_num]
+                            edges_1 += tmp
+                            edges_2 += tmp
+                            edges_2 += [count + 2*var_num]
                             
-                            edge_attr += [[0,1],[0,1]] 
+                            edge_attr += [[0,1]]
+                            
                         count += 1
-                    
+                        
+                    xs = []
+                    for i in node_freq:
+                        sym = int(random.choice([1,-1]))
+                        xi = ((node_freq[i] - 0.5) / 22) * sym
+                        xs += [[xi]]
+                    node_values = xs
+                    node_values += [[-i] for [i] in xs]
+                    node_values += [[1] for _ in range(clause_num)]
+
                     f.close()
-                    """
-                    print("node2idx: ", node2idx)
-                    print("node_values", node_values)
-                    print("edge_1: ", edges_1)
-                    print("edge_2: ", edges_2)
-                    print("edge_attr: ", edge_attr)
-                    """
+                    
                     if self.seperate and (info[0] == "UF250" or info[0] == "UUF250"):
                         self.df_test.loc[len(self.df_test)] = [node_values, [edges_1, edges_2], [edge_attr, edge_attr],[label]]
                     else:
-                        self.df.loc[len(self.df)] = [node_values, [edges_1, edges_2], [edge_attr],[label]]
+                        self.df.loc[len(self.df)] = [node_values, [edges_1, edges_2], [edge_attr, edge_attr],[label]]
 
         print("Satisfiable cnfs: ", self.sat)
         print("Unsatisfiable cnfs: ", self.unsat)
@@ -128,13 +118,4 @@ class processed_data():
             print("Testing set size: ", len(self.df_test))
             
         print("\nDataProcessing completed.")
-        print("max frequency: ", max(global_node_values))
         return (self.unsat / self.sat)
-    
-    
-
-"""
-test = processed_data("./data")
-test.process_rawdata()
-print(max(global_node_values))
-"""

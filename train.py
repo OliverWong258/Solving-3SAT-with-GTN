@@ -9,9 +9,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # 超参数
-value_dim = 25
 batch_size = 64
-feature_size = 32
 embedding_size = 64
 attention_heads = 1
 layers = 2
@@ -23,20 +21,25 @@ weight_decay = 1e-5
 EPOCHS = 51
 EARLY_STOP = 15
 
-def train(training_dataset, pos_weight, model_path):
+def train(dataset, pos_weight, model_path):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f'\nTraining on: {device}')
     
     # 划分训练集和验证集
-    train_size = np.ceil(len(training_dataset) * 0.8)
-    valid_size = len(training_dataset) - train_size
-    train_dataset, valid_dataset = torch.utils.data.random_split(training_dataset, [int(train_size), int(valid_size)])
+    train_size = np.ceil(len(dataset) * 0.8)
+    valid_size = len(dataset) - train_size
+    print("\nTrain size: ", train_size)
+    print("Valid size: ", valid_size)
+    train_dataset, valid_dataset = torch.utils.data.random_split(dataset, [int(train_size), int(valid_size)])
     
     train_loader = DataLoader(train_dataset, batch_size=batch_size)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size)
     
-    edge_dim = training_dataset[0].edge_attr.shape[1]
-    model = network(value_dim=value_dim, feature_size=feature_size, embedding_size=embedding_size, attention_heads=attention_heads, 
+    feature_size = train_dataset[0].x.shape[1]
+    edge_dim = train_dataset[0].edge_attr.shape[1]
+    print("feature_size: ", feature_size)
+    print("edge_dim: ", edge_dim)
+    model = network(feature_size=feature_size, embedding_size=embedding_size, attention_heads=attention_heads, 
                     layers=layers, dropout_rate=dropout_rate, linear_size=linear_size, edge_dim=edge_dim)
     model = model.to(device)
     
@@ -89,7 +92,7 @@ def train(training_dataset, pos_weight, model_path):
                 prediction = model(batch.x.float(), batch.edge_attr.float(), batch.edge_index, batch.batch)
                 loss = criterion(torch.squeeze(prediction), batch.y.float())
                 
-                current_train_loss += loss.item()
+                current_valid_loss += loss.item()
                 valid_batch += 1
                 
             current_valid_loss /= valid_batch

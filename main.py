@@ -6,7 +6,7 @@ from train import train
 from test import test
 import os
 
-data_path = "./datatest"
+data_path = "./data"
 seperate = False
 
 def main():
@@ -27,7 +27,7 @@ def main():
         train_dataset = dataset(root="./", df=data.df_train, test = False)
         train_dataset.process_data()
         
-        train_loss, valid_loss = train(training_dataset=train_dataset, pos_weight=pos_weight, model_path=model_path)
+        train_loss, valid_loss = train(dataset=train_dataset, pos_weight=pos_weight, model_path=model_path)
         print("Final training loss: ", train_loss)
         print("Final validation loss: ", valid_loss)
         

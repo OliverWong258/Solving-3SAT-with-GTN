@@ -11,7 +11,6 @@ class dataset(Dataset):
     def __init__(self, root, df, test, transform=None, pre_transform=None):
         self.df = df
         self.test = test
-        self.data = None
         super(dataset, self).__init__(root, transform, pre_transform)
         
 
@@ -36,16 +35,16 @@ class dataset(Dataset):
             # labels
             label = torch.tensor(np.asarray(cnf["label"]), dtype=torch.int64)
             # create data
-            self.data = Data(x=node_features, edge_index=edge_index,edge_attr=edge_features, y=label)
+            data = Data(x=node_features, edge_index=edge_index,edge_attr=edge_features, y=label)
             
             if not os.path.exists(self.processed_dir):
                 os.makedirs(self.processed_dir)
                 print(f"Created directory: {self.processed_dir}")
                 
             if self.test:
-                torch.save(self.data, os.path.join(self.processed_dir, f'test_data_{index}.pt'))
+                torch.save(data, os.path.join(self.processed_dir, f'test_data_{index}.pt'))
             else:
-                torch.save(self.data, os.path.join(self.processed_dir, f'train_data_{index}.pt'))
+                torch.save(data, os.path.join(self.processed_dir, f'train_data_{index}.pt'))
                 
 
     def len(self):
