@@ -25,9 +25,9 @@ class SAT3Dataset(Dataset):
         raw_data = process_raw(directory=os.path.join(self.root, self.filename))
         self.pos_weight = raw_data.dataset_processing()
         if not self.test:
-            self.data = raw_data.df_tr
+            self.data = raw_data.df_tr.reset_index()
         else:
-            self.data = raw_data.df_test
+            self.data = raw_data.df_test.reset_index()
         
         print("Dataset loading...")
         for index, cnf in tqdm(self.data.iterrows(), total=self.data.shape[0]):
