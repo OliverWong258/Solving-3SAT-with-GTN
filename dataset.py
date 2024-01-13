@@ -12,6 +12,10 @@ class SAT3Dataset(Dataset):
         self.test = test
         self.data = dataframe
         super(SAT3Dataset, self).__init__(root, transform, pre_transform)
+    
+    @property
+    def processed_file_names(self):
+        pass
 
     def process(self):
         print("Dataset loading...")
