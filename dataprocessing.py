@@ -45,7 +45,7 @@ def dataset_processing(separate_test=False):
     # dataframe to store different test, if needed
     df_test = pd.DataFrame(dictionary)
 
-    directory = "../../dataset/SAT3"
+    directory = "./data"
 
     satisfiable_num = 0
     unsatisfiable_num = 0
