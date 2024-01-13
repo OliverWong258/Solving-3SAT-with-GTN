@@ -39,7 +39,8 @@ def test(testing_dataset, pos_weight, model_path):
         
     predictions = np.concatenate(predictions).ravel()
     labels = np.concatenate(labels).ravel()
-        
+    print("labels: ", labels)
+    print("predictions: ", predictions)
     print(f"F1 Score  : {f1_score(labels, predictions):.4f}")
     print(f"Accuracy  : {accuracy_score(labels, predictions):.4f}")
     print(f"Precision : {precision_score(labels, predictions):.4f}")
