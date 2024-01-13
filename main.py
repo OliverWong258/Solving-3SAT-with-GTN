@@ -4,6 +4,7 @@ import sys
 from dataset import dataset
 from train import train
 from test import test
+import os
 
 data_path = "./datatest"
 seperate = False
@@ -14,6 +15,9 @@ def main():
         sys.exit(1)    
     operation = sys.argv[1]
     model_path = "./models/" + sys.argv[2]
+    if not os.path.exists("./models"):
+        os.makedirs("./models")
+        print("\nCreate ./models")
     
     data = processed_data(data_path=data_path, seperate=seperate)
     pos_weight = data.process_rawdata()

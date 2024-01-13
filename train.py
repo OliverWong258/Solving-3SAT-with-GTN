@@ -48,8 +48,10 @@ def train(training_dataset, pos_weight, model_path):
     
 
     loss_difference = 1.0             # 训练集和验证集的误差差距，避免过拟合
-    final_valid_loss = 1000  
-    final_train_loss = 1000 
+    final_valid_loss = 1000.0  
+    final_train_loss = 1000.0 
+    current_train_loss = 0.0
+    current_valid_loss = 0.0
     early_stop_cnt = 0                # 早停计数器
     
     train_loss_list = []
@@ -112,7 +114,6 @@ def train(training_dataset, pos_weight, model_path):
             difference = abs(float(current_train_loss) - float(current_valid_loss))
             stopped = True
             early_stop_cnt = 0
-            early_stop = epoch
             print("Early stop activated with loss difference: ", difference, end=' ')
             print("at epoch ", epoch)
      
