@@ -10,36 +10,32 @@ import pandas as pd
 from dataset import SAT3Dataset
 from model import GNN
 import warnings
+import os
 warnings.filterwarnings('ignore')
 
 MAX_NUMBER_OF_EPOCHS = 51
 EARLY_STOPPING_COUNTER = 30
 
-# set seed so that the train-valid sets are always the same
-torch.manual_seed(15)
-torch.cuda.manual_seed(15)
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(f'Device is: {device}')
+print(f'Training on: {device}')
 
 
-def plot_errors(errors, early_stopping):
+def plot_errors(errors):
     losses = list(map(list, zip(*errors)))
     train_loss = losses[0]
     valid_loss = losses[1]
     plt.plot([i+1 for i in range(MAX_NUMBER_OF_EPOCHS-1)], train_loss, color='r', label='Training loss')
     plt.plot([i + 1 for i in range(MAX_NUMBER_OF_EPOCHS-1)], valid_loss, color='g', label='Validation loss')
-    plt.vlines(x=early_stopping, ymin=0.0, ymax=max(valid_loss), colors='purple', ls='--',
-               label='early stopping activated')
-    plt.vlines(x=early_stopping-EARLY_STOPPING_COUNTER, ymin=0.0, ymax=max(valid_loss), colors='magenta',
-               label='considered model')
 
     plt.ylabel('Training and Validation loss')
     plt.xlabel('Epochs')
-    plt.title('Early stopping in selected model')
+    plt.title('Early stopping in selected mode')
 
     plt.legend()
-    plt.show()
+    if not os.path.exists("./plots"):
+        os.mkdir("./plots")
+    plt.savefig('./plots/train_valid_error.png')
+    plt.close()
 
 
 def metrics(y_pred, y, plot_var, y_proba=[]):
@@ -91,27 +87,6 @@ def metrics(y_pred, y, plot_var, y_proba=[]):
         plt.close()
 
 
-def train_one_epoch(model, train_loader, optimizer, criterion):
-    running_loss = 0.0
-    step = 0
-
-    torch.manual_seed(15)
-    for batch in train_loader:
-        batch.to(device)
-        optimizer.zero_grad()
-        # make prediction
-        prediction = model(batch.x.float(), batch.edge_attr.float(), batch.edge_index, batch.batch)
-        # calculate loss
-        loss = criterion(torch.squeeze(prediction), batch.y.float())
-        # calculate gradient
-        loss.backward()
-        optimizer.step()
-
-        running_loss += loss.item()
-        step += 1
-
-    return running_loss / step
-
 
 def evaluation(model, test_loader, criterion, plot_var="same", print_metrics=False):
     predictions = []
@@ -154,9 +129,7 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
     train_set_size = np.ceil(len(dataset) * 0.8)
     valid_set_size = len(dataset) - train_set_size
 
-    torch.manual_seed(15)
-    train_dataset, valid_dataset = \
-        torch.utils.data.random_split(dataset, [int(train_set_size), int(valid_set_size)])
+    train_dataset, valid_dataset = torch.utils.data.random_split(dataset, [int(train_set_size), int(valid_set_size)])
 
     # no shuffling, as it is already shuffled
     train_loader = DataLoader(train_dataset, batch_size=64)
@@ -177,8 +150,7 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
     # define a loss function
     criterion = torch.nn.BCEWithLogitsLoss(pos_weight=weight)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-5,
-                                 amsgrad=False)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-5, amsgrad=False)
 
     # no parameter optimizing for 'scheduler gamma' as it multiplies with weight decay
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
@@ -203,12 +175,39 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
         if early_stopping_counter < EARLY_STOPPING_COUNTER:
             # perform one training epoch
             model.train()
-            training_loss = train_one_epoch(model, train_loader, optimizer, criterion)
+            training_loss = 0.0
+            step = 0
+            for batch in train_loader:
+                batch.to(device)
+                optimizer.zero_grad()
+                # make prediction
+                prediction = model(batch.x.float(), batch.edge_attr.float(), batch.edge_index, batch.batch)
+                # calculate loss
+                loss = criterion(torch.squeeze(prediction), batch.y.float())
+                # calculate gradient
+                loss.backward()
+                optimizer.step()
+
+                training_loss += loss.item()
+                step += 1
+
+            training_loss /= step
             print(f"Training Loss   : {training_loss:.4f}")
 
             # compute validation set loss
             model.eval()
-            validation_loss = evaluation(model, valid_loader, criterion)
+            validation_loss = 0.0
+            step = 0
+            for batch in valid_loader:
+                batch.to(device)
+                # make prediction
+                prediction = model(batch.x.float(), batch.edge_attr.float(), batch.edge_index, batch.batch)
+                # calculate loss
+                loss = criterion(torch.squeeze(prediction), batch.y.float())
+
+                validation_loss += loss.item()
+                step += 1
+            validation_loss /= step
             print(f"Validation Loss : {validation_loss:.4f}\n")
 
             errors += [(training_loss, validation_loss)]
@@ -221,7 +220,7 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
                     final_valid_loss = validation_loss
                     final_train_loss = training_loss
                     # if still some progress can be made -> save the currently best model
-                    torch.save(model.state_dict(), model_name)
+                    torch.save(model_name)
 
                     early_stopping_counter = 0
                 else:
@@ -231,20 +230,14 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
         else:
             difference = abs(float(final_valid_loss) - float(final_train_loss))
             print(f"Early stopping activated, with training and validation loss difference: {difference:.4f}")
-
-            if make_err_logs:
-                print("\nTraining has stopped, now continuing with logging\n")
-                stopped = True
-                early_stopping_counter = 0
-                early_stopping = epoch
-            else:
-                return final_valid_loss
+            stopped = True
+            early_stopping_counter = 0
 
     print(f"Finishing training with best training loss: {final_train_loss:.4f} and best "
           f"validation loss: {final_valid_loss:.4f}")
 
     if make_err_logs:
-        plot_errors(errors, early_stopping)
+        plot_errors(errors)
 
     return final_valid_loss
 

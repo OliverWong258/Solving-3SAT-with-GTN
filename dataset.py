@@ -46,8 +46,6 @@ class SAT3Dataset(Dataset):
             if self.test:
                 torch.save(data, os.path.join(self.processed_dir, f'data_test_{index}.pt'))
             else:
-                if(index == 2403):
-                    print("here")
                 torch.save(data, os.path.join(self.processed_dir, f'data_{index}.pt'))
                 
 
