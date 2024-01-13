@@ -17,9 +17,9 @@ def delete_folder_contents(folders):
                 shutil.rmtree(file_path)
 
 def main():
-    delete_folder_contents(["./raw", "./processed"])
+    delete_folder_contents(["./processed"])
     raw_data = process_raw()
-    pos_weight = raw_data.dataset_processing(separate_test=False)
+    pos_weight = raw_data.dataset_processing()
     dataset = SAT3Dataset(root="./", dataframe=raw_data.df)
     training(dataset=dataset, pos_weight=pos_weight, model_name='./final_model_same_sets.pth', make_err_logs=True)
 
