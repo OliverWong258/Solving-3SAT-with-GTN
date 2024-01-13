@@ -1,127 +1,182 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import pandas as pd
-from tqdm import tqdm
-import random
 import numpy as np
+import warnings
+
+warnings.filterwarnings('ignore')
+
+'''
+This code converts the given CNF clauses to a format that will be useful for constructing the graph
+
+Example of files' format:
+
+--8 rows of metadata--
+1 -18 3 0
+6 7 -9 0
+
+%
+0
+\n
+
+where each line is a clause that has 3 variables (or their negation if minus(-) is used) and the 0 that corresponds to
+the AND operator. The number of row is the number of clauses .
+'''
 
 
-dictionary = {"nodeFeatures": [],
-                "edges": [],
-                "edgeAttr": [],
-                "label": []}
+def dataset_processing(separate_test=False):
+    """ separate_test: if we want to use as test set the  cnf's that have the biggest length
+    (to see if the model generalizes well) in larger inputs than these that it has been trained for """
 
-# store the processed data
-class processed_data():
-    def __init__(self, data_path, seperate = False, frac = 0.8):
-        self.data_path = data_path  # path of the raw data
-        self.seperate = seperate    # whether the train and test data are seperated or not
-        self.sat = 0            # the number of satisfiable 
-        self.unsat = 0          # the number of unsatisfiable
-        self.df = pd.DataFrame(dictionary)
-        self.df_train = pd.DataFrame(dictionary)
-        self.df_test = pd.DataFrame(dictionary)
-        self.df = self.df.astype('object')
-        self.df_train = self.df_train.astype('object')
-        self.df_test = self.df_test.astype('object')
-        self.frac = frac
-        
-    def process_rawdata(self):
-        print("Processing raw data")
-        for dir in tqdm(os.listdir(self.data_path)):
-            current_dir = self.data_path + "/" + dir
-            if os.path.isdir(current_dir):
-                # read messeage from the name of the directory
-                info = dir.split(".")
-                var_num = int(info[0][2:]) if (info[0][1] == "F") else int(info[0][3:]) # number of variables
-                clause_num = int(info[1])
-                label = 1 if(info[0][1] == "F") else 0  # satisfiable or not
-                
-                if not (self.seperate and (info[0] == "UF250" or info[0] == "UUF250")):
-                    if label == 1:
-                        self.sat += int(info[2])
-                    else:
-                        self.unsat += int(info[2])
-                
-                for file in os.listdir(current_dir):
-                    f = open(current_dir + "/" + file, "r")
-                    clauses = f.readlines()[8:]
-                    clauses = [line.strip() for line in clauses]
-                    clauses = [line[:-2] for line in clauses]
-                    clauses = [line for line in clauses if line != '']
-                    
-                    node_values = [] # idx 2 node values(the frequency)
-                    node_freq = []
-                    
-                    edges_1 = [] # start node idx of each edge
-                    edges_2 = [] # end node idx of each edge
-                    edge_attr = []
-                    
-                    
-                    for i in range(var_num):
-                        tmp = i + var_num
-                        edges_1 += [i]
-                        edges_1 += [tmp]
-                        edges_2 += [tmp]
-                        edges_2 += [i]
-                        
-                        edge_attr += [[1,0]]
-                        
-                        node_freq += [0]
-                    
-                    count = 0
-                    # build the dictionary
-                    for clause in clauses:
-                        clause_vars = clause.split(" ")
-                        clause_vars = [int(var) for var in clause_vars]
-                        
-                        for var in clause_vars: 
-                            node_freq[abs(var)-1] += 1
-                            tmp = [var-1] if var > 0 else [abs(var) + var_num - 1]
-                            edges_1 += [count + 2*var_num]
-                            edges_1 += tmp
-                            edges_2 += tmp
-                            edges_2 += [count + 2*var_num]
-                            
-                            edge_attr += [[0,1]]
-                            
-                        count += 1
-                    """
-                    xs = []
-                    for i in node_freq:
-                        sym = int(random.choice([1,-1]))
-                        xi = ((i - 0.5) / 22) * sym
-                        xs += [[xi]]
-                    node_values = xs
-                    node_values += [[-i] for [i] in xs]
-                    node_values += [[1] for _ in range(clause_num)]
-                    """
-                    x_i = [[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, var_num)]
-                    node_values = x_i
-                    node_values += [[-i] for [i] in x_i]
-                    node_values += [[1] for _ in range(0, clause_num)]
-                    
-                    f.close()
-                    
-                    if self.seperate and (info[0] == "UF250" or info[0] == "UUF250"):
-                        self.df_test.loc[len(self.df_test)] = [node_values, [edges_1, edges_2], [edge_attr, edge_attr],[label]]
-                    else:
-                        self.df.loc[len(self.df)] = [node_values, [edges_1, edges_2], [edge_attr, edge_attr],[label]]
+    print("Start the data processing...\n")
 
-        print("Satisfiable cnfs: ", self.sat)
-        print("Unsatisfiable cnfs: ", self.unsat)
-        sat_ratio = self.sat / (self.sat + self.unsat)
-        print("Satisfiable ratio: ", sat_ratio)
-        
-        if self.seperate:
-            self.df_train = self.df
-            print("Training set size: ", len(self.df_train))
-            print("Testing set size: ", len(self.df_test))
-        else:
-            self.df_train = self.df.sample(frac=self.frac)
-            self.df_test = self.df.drop(self.df_train.index)
-            print("Training set size: ", len(self.df_train))
-            print("Testing set size: ", len(self.df_test))
-            
-        print("\nDataProcessing completed.")
-        return (self.unsat / self.sat)
+    # create columns of dataset
+    dictionary = {"numberOfVariables": [],
+                  "numberOfClauses": [],
+                  "variablesSymb": [],
+                  "variablesNum": [],
+                  "edges": [],
+                  "edgeAttr": [],
+                  "label": []}
+
+    # create dataframe
+    df = pd.DataFrame(dictionary)
+    # dataframe to store different test, if needed
+    df_test = pd.DataFrame(dictionary)
+
+    directory = "../../dataset/SAT3"
+
+    satisfiable_num = 0
+    unsatisfiable_num = 0
+
+    for dirName in os.listdir(directory):
+        curr_dir = directory + "/" + dirName
+        if os.path.isdir(curr_dir):
+            # the directory's name stored information about its contents :[UF/UUF<#variables>.<#clauses>.<#cnfs>]
+            dir_info = dirName.split(".")
+            # number of variables in each data-file regarding the folder
+            number_of_variables = int((re.findall(r'\d+', dir_info[0]))[0])
+            # number of clauses in each
+            # data-file regarding the folder
+            number_of_clauses = int(dir_info[1])
+            # get label of these data : UUF means UNSAT and UF means SAT
+            y = 0 if dir_info[0][:3] == "UUF" else 1
+
+            # we want to see the balancing of the training dataset
+            if not (separate_test and (dir_info[0] == "UF250" or dir_info[0] == "UUF250")):
+                if y == 1:
+                    satisfiable_num += int(dir_info[2])
+                else:
+                    unsatisfiable_num += int(dir_info[2])
+
+            # Nodes:
+            #     0 - numberOfVariables- 1                                      : x_1 - x_n
+            #     numberOfVariables - 2*numberOfVariables                       : ~x_1 - ~x_n
+            #     2*numberOfVariables - 2*numberOfVariables + numberOfClauses   : c_1 - c_m
+
+            nodes = [i for i in range(0, 2 * number_of_variables + number_of_clauses)]
+            x_i = [[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, number_of_variables)]
+            node_values = x_i
+            node_values += [[-i] for [i] in x_i]
+            node_values += [[1] for _ in range(0, number_of_clauses)]
+
+            for fileName in os.listdir(curr_dir):
+                f = open(curr_dir + "/" + fileName, "r")
+                clauses = f.readlines()[8:]
+                clauses = [line.strip() for line in clauses]  # remove '\n' from the end and '' from the start
+                clauses = [line[:-2] for line in clauses]     # keep only the corresponding variables
+                clauses = [line for line in clauses if line != '']  # keep only the lines that correspond to a clause
+
+                # edges
+                edges_1 = []
+                edges_2 = []
+
+                # compute edge attributes as x_i -> ~x_i are
+                # connected via a different edge than c_j and x_i
+                edge_attr = []
+
+                # make the edges from x_i -> ~x_i and ~x_i -> x_i
+                for i in range(number_of_variables):
+
+                    temp = [i + number_of_variables]
+                    edges_1 += [i]
+                    edges_1 += temp
+                    edges_2 += temp
+                    edges_2 += [i]
+
+                    # first characteristic is :  connection between x_i and ~x_i
+                    # second characteristic is :  connection between c_j and x_i
+                    edge_attr += [[1, 0]]
+
+                # make the edges from corresponding c_j -> x_i (NOW VICE VERSA)
+                count = 0
+                for clause in clauses:
+                    clause_vars = clause.split(" ")
+                    clause_vars = [int(var) for var in clause_vars]
+                    # create the corresponding edges
+                    for xi in clause_vars:
+                        temp = [xi-1] if xi > 0 else [abs(xi)-1+number_of_variables]
+                        edges_1 += [count + 2*number_of_variables]
+                        edges_1 += temp
+                        edges_2 += temp
+                        edges_2 += [count + 2*number_of_variables]
+
+                        edge_attr += [[0, 1]]
+
+                    count += 1
+
+                f.close()
+
+                # insert new row in dataframe :
+                # "numberOfVariables","numberOfClauses", "variablesSymb", "variablesNum", "edges", "edgeAttr","label"
+                if separate_test and (dir_info[0] == "UF250" or dir_info[0] == "UUF250"):
+                    df_test.loc[len(df_test)] = [number_of_variables, number_of_clauses,
+                                                 node_values, nodes, [edges_1, edges_2],
+                                                 [edge_attr, edge_attr], [y]]
+                else:
+                    df.loc[len(df)] = [number_of_variables, number_of_clauses,
+                                       node_values, nodes, [edges_1, edges_2],
+                                       [edge_attr, edge_attr], [y]]
+
+    # print some metrics
+    print(f'Satisfiable CNFs   : {satisfiable_num}')
+    print(f'Unsatisfiable CNFs : {unsatisfiable_num}\n')
+
+    sat_ratio = satisfiable_num / (satisfiable_num + unsatisfiable_num)
+
+    print(f'Ratio of SAT   : {sat_ratio:.4f}')
+    print(f'Ratio of UNSAT : {1.0 - sat_ratio:.4f}\n')
+
+    # store dataset in format that supports long lists
+    if not separate_test:
+        df_tr = df.sample(frac=0.8)
+        df_test = df.drop(df_tr.index)
+
+        store = pd.HDFStore('./raw/store.h5')
+        store['df'] = df_tr
+        store.close()
+
+        store = pd.HDFStore('./raw/store_test.h5')
+        store['df'] = df_test
+        store.close()
+
+        print(f'Training set size: {len(df_tr)}')
+        print(f'Test set size: {len(df_test)}')
+
+    else:
+        store = pd.HDFStore('./raw/store.h5')
+        store['df'] = df
+        store.close()
+
+        store = pd.HDFStore('./raw/store_test.h5')
+        store['df'] = df_test
+        store.close()
+
+        print(f'Training set size: {len(df)}')
+        print(f'Test set size: {len(df_test)}')
+
+    print("\nProcessing completed.")
+
+    # return this for later purposes
+    return unsatisfiable_num/satisfiable_num

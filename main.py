@@ -1,42 +1,25 @@
 # -*- coding: utf-8 -*-
-from dataprocessing import processed_data
+from dataprocessing import dataset_processing
 import sys
 from dataset import dataset
-from train import train
+from train import training
 from test import test
-import os
+import os, shutil
 
-data_path = "./data"
-seperate = False
+
+def delete_folder_contents(folders):
+    for folder in folders:
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python main.py <operation>")
-        sys.exit(1)    
-    operation = sys.argv[1]
-    model_path = "./models/" + sys.argv[2]
-    if not os.path.exists("./models"):
-        os.makedirs("./models")
-        print("\nCreate ./models")
-    
-    data = processed_data(data_path=data_path, seperate=seperate)
-    pos_weight = data.process_rawdata()
-    
-    
-    if operation == "train":
-        train_dataset = dataset(root="./", df=data.df_train, test = False)
-        train_dataset.process_data()
-        
-        train_loss, valid_loss = train(dataset=train_dataset, pos_weight=pos_weight, model_path=model_path)
-        print("Final training loss: ", train_loss)
-        print("Final validation loss: ", valid_loss)
-        
-    elif operation == "test":
-        test_dataset = dataset(root="./", df=data.df_test, test = True)
-        test_dataset.process_data()
-        
-        test_loss = test(model_path=model_path, testing_dataset=test_dataset, pos_weight=pos_weight)
-        print("Test loss: ", test_loss)
+    delete_folder_contents(["./raw", "./processed"])
+    pos_weight = dataset_processing(separate_test=False)
+    training(model_name='./final_model_same_sets.pth', make_err_logs=True)
 
 
 
