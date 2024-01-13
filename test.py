@@ -2,7 +2,6 @@
 import torch
 from torch_geometric.loader import DataLoader
 import numpy as np
-from dataset import dataset
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 import warnings
 warnings.filterwarnings('ignore')
