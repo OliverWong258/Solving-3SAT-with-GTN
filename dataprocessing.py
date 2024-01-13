@@ -8,136 +8,112 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # 数据集列名
-dictionary = {"numberOfVariables": [],
-                      "numberOfClauses": [],
-                      "variablesSymb": [],
-                      "variablesNum": [],
+dictionary = {"node_features": [],
                       "edges": [],
-                      "edgeAttr": [],
+                      "edge_attr": [],
                       "label": []}
 
 class process_raw():
-    def __init__(self, directory = "./data", separate_test = False, frac=0.8):
+    def __init__(self, directory = "./data", separate = False, frac=0.8):
         self.df = pd.DataFrame(dictionary)
         self.df_test = pd.DataFrame(dictionary)
         self.directory = directory
-        self.separate_test = separate_test
+        self.separate = separate
         self.frac = frac
         
     def dataset_processing(self):
-        print("Start the data processing...\n")
+        print("Processing raw data")
 
-        satisfiable_num = 0
-        unsatisfiable_num = 0
+        num_sat = 0
+        num_unsat = 0
 
-        for dirName in os.listdir(self.directory):
-            curr_dir = self.directory + "/" + dirName
-            if os.path.isdir(curr_dir):
-                # the directory's name stored information about its contents :[UF/UUF<#variables>.<#clauses>.<#cnfs>]
-                dir_info = dirName.split(".")
-                # number of variables in each data-file regarding the folder
-                number_of_variables = int((re.findall(r'\d+', dir_info[0]))[0])
-                # number of clauses in each
-                # data-file regarding the folder
-                number_of_clauses = int(dir_info[1])
-                # get label of these data : UUF means UNSAT and UF means SAT
-                y = 0 if dir_info[0][:3] == "UUF" else 1
+        for folder in os.listdir(self.directory):
+            current_dir = self.directory + "/" + folder
+            if os.path.isdir(current_dir):
+                # 目录=满足/不满足+变量数+字句数+实例个数
+                info = folder.split(".")
+                var_num = int(info[0][2:]) if info[0][1] == "F" else int(info[0][3:])
+                clause_num = int(info[1])
+                # sat: 1, unsat: 0
+                label = 1 if info[0][1] == "F" else 0
 
                 # we want to see the balancing of the training dataset
-                if not (self.separate_test and (dir_info[0] == "UF250" or dir_info[0] == "UUF250")):
-                    if y == 1:
-                        satisfiable_num += int(dir_info[2])
+                if not (self.separate and (info[0] == "UF250" or dir[0] == "UUF250")):
+                    if label == 1:
+                        num_sat += int(info[2])
                     else:
-                        unsatisfiable_num += int(dir_info[2])
+                        num_unsat += int(info[2])
 
-                # Nodes:
-                #     0 - numberOfVariables- 1                                      : x_1 - x_n
-                #     numberOfVariables - 2*numberOfVariables                       : ~x_1 - ~x_n
-                #     2*numberOfVariables - 2*numberOfVariables + numberOfClauses   : c_1 - c_m
+                
+                tmp = [[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, var_num)]
+                node_values = tmp
+                node_values += [[-i] for [i] in tmp]    # 变量取非对应的节点特征取负号
+                node_values += [[1] for _ in range(0, clause_num)]  # 字句节点同一用1表示
 
-                nodes = [i for i in range(0, 2 * number_of_variables + number_of_clauses)]
-                x_i = [[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, number_of_variables)]
-                node_values = x_i
-                node_values += [[-i] for [i] in x_i]
-                node_values += [[1] for _ in range(0, number_of_clauses)]
+                for file in os.listdir(current_dir):
+                    cnf = open(current_dir + "/" + file, "r")
+                    clauses = cnf.readlines()[8:]
+                    clauses = [line.strip() for line in clauses]  
+                    clauses = [line[:-2] for line in clauses] 
+                    clauses = [line for line in clauses if line != '']
 
-                for fileName in os.listdir(curr_dir):
-                    f = open(curr_dir + "/" + fileName, "r")
-                    clauses = f.readlines()[8:]
-                    clauses = [line.strip() for line in clauses]  # remove '\n' from the end and '' from the start
-                    clauses = [line[:-2] for line in clauses]     # keep only the corresponding variables
-                    clauses = [line for line in clauses if line != '']  # keep only the lines that correspond to a clause
-
-                    # edges
+                    # 边的起始节点
                     edges_1 = []
                     edges_2 = []
 
-                    # compute edge attributes as x_i -> ~x_i are
-                    # connected via a different edge than c_j and x_i
+                    # 边特征
                     edge_attr = []
 
-                    # make the edges from x_i -> ~x_i and ~x_i -> x_i
-                    for i in range(number_of_variables):
-
-                        temp = [i + number_of_variables]
+                    # 从变量到取非之间的边
+                    for i in range(var_num):
                         edges_1 += [i]
-                        edges_1 += temp
-                        edges_2 += temp
+                        edges_1 += [i + var_num]
+                        edges_2 += [i + var_num]
                         edges_2 += [i]
-
-                        # first characteristic is :  connection between x_i and ~x_i
-                        # second characteristic is :  connection between c_j and x_i
+                            
+                        # [1,0]代表变量间的边
                         edge_attr += [[1, 0]]
 
-                    # make the edges from corresponding c_j -> x_i (NOW VICE VERSA)
-                    count = 0
+                    cnt = 0
                     for clause in clauses:
                         clause_vars = clause.split(" ")
                         clause_vars = [int(var) for var in clause_vars]
-                        # create the corresponding edges
-                        for xi in clause_vars:
-                            temp = [xi-1] if xi > 0 else [abs(xi)-1+number_of_variables]
-                            edges_1 += [count + 2*number_of_variables]
-                            edges_1 += temp
-                            edges_2 += temp
-                            edges_2 += [count + 2*number_of_variables]
+                        # 字句与变量的边
+                        for var in clause_vars:
+                            tmp = [var-1] if var > 0 else [abs(var)-1 + var_num]
+                            edges_1 += [cnt + 2*var_num]
+                            edges_1 += tmp
+                            edges_2 += tmp
+                            edges_2 += [cnt + 2*var_num]
 
                             edge_attr += [[0, 1]]
 
-                        count += 1
+                        cnt += 1
 
-                    f.close()
+                    cnf.close()
 
-                    # insert new row in dataframe :
-                    # "numberOfVariables","numberOfClauses", "variablesSymb", "variablesNum", "edges", "edgeAttr","label"
-                    if self.separate_test and (dir_info[0] == "UF250" or dir_info[0] == "UUF250"):
-                        self.df_test.loc[len(self.df_test)] = [number_of_variables, number_of_clauses,
-                                                     node_values, nodes, [edges_1, edges_2],
-                                                     [edge_attr, edge_attr], [y]]
+
+                    if self.separate and (info[0] == "UF250" or info[0] == "UUF250"):
+                        self.df_test.loc[len(self.df_test)] = [node_values, [edges_1, edges_2],
+                                                     [edge_attr, edge_attr], [label]]
                     else:
-                        self.df.loc[len(self.df)] = [number_of_variables, number_of_clauses,
-                                           node_values, nodes, [edges_1, edges_2],
-                                           [edge_attr, edge_attr], [y]]
+                        self.df.loc[len(self.df)] = [ node_values, [edges_1, edges_2],
+                                           [edge_attr, edge_attr], [label]]
 
-        # print some metrics
-        print(f'Satisfiable CNFs   : {satisfiable_num}')
-        print(f'Unsatisfiable CNFs : {unsatisfiable_num}\n')
-
-        sat_ratio = satisfiable_num / (satisfiable_num + unsatisfiable_num)
-
-        print(f'Ratio of SAT   : {sat_ratio:.4f}')
-        print(f'Ratio of UNSAT : {1.0 - sat_ratio:.4f}\n')
+        print('Satisfiable: ', num_sat)
+        print('Unsatisfiable: ', num_unsat)
         
+        pos_weight = num_unsat / num_sat
+        print("Positive weitht: ", pos_weight)
         if self.separate_test:
-            print(f'Training set size: {len(self.df)}')
-            print(f'Test set size: {len(self.df_test)}')
+            print('Training set size: ', len(self.df))
+            print('Test set size: ', len(self.df_test))
         else:
             self.df_tr = self.df.sample(frac=self.frac)
             self.df_test = self.df.drop(self.df_tr.index)
-            print(f'Training set size: {len(self.df_tr)}')
-            print(f'Test set size: {len(self.df_test)}')
+            print('Training set size: ', len(self.df_tr))
+            print('Test set size: ', len(self.df_test))
+        
+        print("Raw data processed")
 
-        print("\nProcessing completed.")
-
-        # return this for later purposes
-        return unsatisfiable_num/satisfiable_num
+        return pos_weight

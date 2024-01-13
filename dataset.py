@@ -32,12 +32,12 @@ class SAT3Dataset(Dataset):
         print("Dataset loading...")
         for index, cnf in tqdm(self.data.iterrows(), total=self.data.shape[0]):
             # get node features (here we actually don't have many)
-            node_feats = torch.tensor(cnf["variablesSymb"], dtype=torch.float)
+            node_feats = torch.tensor(cnf["node_features"], dtype=torch.float)
             # get adjacency info
             edge_index = torch.tensor(cnf["edges"], dtype=torch.long)
             num_edges = edge_index.size(dim=1)
             # get edge features |  view is used in order to get the correct dimensions as specified by COO format
-            edge_feats = torch.tensor(cnf["edgeAttr"], dtype=torch.float).view(num_edges, -1)
+            edge_feats = torch.tensor(cnf["edge_attr"], dtype=torch.float).view(num_edges, -1)
             # get labels info
             label = torch.tensor(np.asarray(cnf["label"]), dtype=torch.int64)
             # now, create data object
