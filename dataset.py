@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from torch_geometric.data import Dataset, Data
 from tqdm import tqdm
-import pandas as pd
 import numpy as np
 import torch
 import os
-from dataprocessing import process_raw
+from data_process import process_raw
 
 
 class SAT3Dataset(Dataset):
@@ -19,34 +18,33 @@ class SAT3Dataset(Dataset):
     
     @property
     def processed_file_names(self):
+        # Dataset类要求填充成员函数，并无实际意义
         return self.filename
 
     def process(self):
         raw_data = process_raw(directory=os.path.join(self.root, self.filename))
         self.pos_weight = raw_data.dataset_processing()
+        
         if not self.test:
-            self.data = raw_data.df_tr.reset_index()
+            self.data = raw_data.df_train.reset_index()
         else:
             self.data = raw_data.df_test.reset_index()
         
-        print("Dataset loading...")
+        print("Loading dataset")
         for index, cnf in tqdm(self.data.iterrows(), total=self.data.shape[0]):
-            # get node features (here we actually don't have many)
+            # 节点信息
             node_feats = torch.tensor(cnf["node_features"], dtype=torch.float)
-            # get adjacency info
+            # 边信息
             edge_index = torch.tensor(cnf["edges"], dtype=torch.long)
             num_edges = edge_index.size(dim=1)
-            # get edge features |  view is used in order to get the correct dimensions as specified by COO format
             edge_feats = torch.tensor(cnf["edge_attr"], dtype=torch.float).view(num_edges, -1)
-            # get labels info
+            # 标签信息
             label = torch.tensor(np.asarray(cnf["label"]), dtype=torch.int64)
-            # now, create data object
             data = Data(x=node_feats, edge_index=edge_index, edge_attr=edge_feats, y=label)
-            # save the data
             if self.test:
                 torch.save(data, os.path.join(self.processed_dir, f'data_test_{index}.pt'))
             else:
-                torch.save(data, os.path.join(self.processed_dir, f'data_{index}.pt'))
+                torch.save(data, os.path.join(self.processed_dir, f'data_train_{index}.pt'))
                 
 
     def len(self):
@@ -56,4 +54,4 @@ class SAT3Dataset(Dataset):
         if self.test:
             return torch.load(os.path.join(self.processed_dir, f'data_test_{index}.pt'))
         else:
-            return torch.load(os.path.join(self.processed_dir, f'data_{index}.pt'))
+            return torch.load(os.path.join(self.processed_dir, f'data_train_{index}.pt'))

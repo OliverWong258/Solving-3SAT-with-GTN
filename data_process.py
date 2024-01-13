@@ -16,6 +16,7 @@ dictionary = {"node_features": [],
 class process_raw():
     def __init__(self, directory = "./data", separate = False, frac=0.8):
         self.df = pd.DataFrame(dictionary)
+        self.df_train = pd.DataFrame(dictionary)
         self.df_test = pd.DataFrame(dictionary)
         self.directory = directory
         self.separate = separate
@@ -106,10 +107,11 @@ class process_raw():
         pos_weight = num_unsat / num_sat
         print("Positive weitht: ", pos_weight)
         if self.separate_test:
+            self.df_train = self.df
             print('Training set size: ', len(self.df))
             print('Test set size: ', len(self.df_test))
         else:
-            self.df_tr = self.df.sample(frac=self.frac)
+            self.df_train = self.df.sample(frac=self.frac)
             self.df_test = self.df.drop(self.df_tr.index)
             print('Training set size: ', len(self.df_tr))
             print('Test set size: ', len(self.df_test))
