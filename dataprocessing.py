@@ -89,7 +89,7 @@ class processed_data():
                     xs = []
                     for i in node_freq:
                         sym = int(random.choice([1,-1]))
-                        xi = ((node_freq[i] - 0.5) / 22) * sym
+                        xi = ((i - 0.5) / 22) * sym
                         xs += [[xi]]
                     node_values = xs
                     node_values += [[-i] for [i] in xs]
