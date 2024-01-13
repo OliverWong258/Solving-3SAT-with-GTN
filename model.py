@@ -59,10 +59,10 @@ class network(torch.nn.Module):
             
             # 最大池化和平均池化
             global_representation.append(torch.cat([gmp(x, batch_index), gap(x, batch_index)], dim=1))
-        print("x after second unit: ", x)
-        print("global_representation: ", global_representation)    
+        #print("x after second unit: ", x)
+        #print("global_representation: ", global_representation)    
         x = sum(global_representation)
-        print("x after sum: ", x)
+        #print("x after sum: ", x)
         x = torch.relu(self.linear1(x))
         x = torch.relu(self.linear2(x))
         x = torch.sigmoid(self.linear3(x))

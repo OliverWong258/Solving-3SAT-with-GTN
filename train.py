@@ -74,9 +74,9 @@ def train(training_dataset, pos_weight, model_path):
                 current_train_loss += loss.item()
                 train_batch += 1
                 
-            current_loss /= train_batch
-            print("Training loss: ", current_loss)
-            train_loss_list.append(current_loss)
+            current_train_loss /= train_batch
+            print("Training loss: ", current_train_loss)
+            train_loss_list.append(current_train_loss)
             
             # 在验证集上测试
             model.eval()
