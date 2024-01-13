@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from torch_geometric.data import Dataset, Data
 from tqdm import tqdm
 import numpy as np
@@ -14,7 +15,7 @@ class dataset(Dataset):
         
 
     def process_data(self):
-        print("processing data for dataset...")
+        print("Processing data for dataset")
         self.df = self.df.reset_index()
         
         for index, cnf in tqdm(self.df.iterrows(), total = self.df.shape[0]):
@@ -42,6 +43,7 @@ class dataset(Dataset):
                 torch.save(data, os.path.join(self.processed_dir, f'test_data_{index}.pt'))
             else:
                 torch.save(data, os.path.join(self.processed_dir, f'train_data_{index}.pt'))
+                
 
     def len(self):
         return self.data.shape[0]

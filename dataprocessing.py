@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import os
-import pdb
 import pandas as pd
+from tqdm import tqdm
 
+global_node_values = []
 
 dictionary = {"nodeFeatures": [],
                 "edges": [],
@@ -24,7 +26,8 @@ class processed_data():
         self.frac = frac
         
     def process_rawdata(self):
-        for dir in os.listdir(self.data_path):
+        print("Processing raw data")
+        for dir in tqdm(os.listdir(self.data_path)):
             current_dir = self.data_path + "/" + dir
             if os.path.isdir(current_dir):
                 # read messeage from the name of the directory
@@ -70,6 +73,8 @@ class processed_data():
                                 idx2value[node2idx[var]] += 1
                     for i in range(count):
                         node_values.append(idx2value[i])
+                    global global_node_values
+                    global_node_values += node_values
                     
                     # build edges between var and -var
                     for xi in node2idx.keys():
@@ -107,10 +112,10 @@ class processed_data():
                     else:
                         self.df.loc[len(self.df)] = [node_values, [edges_1, edges_2], [edge_attr],[label]]
 
-        print("satisfiable cnfs: ", self.sat)
-        print("unsatisfiable cnfs: ", self.unsat)
+        print("Satisfiable cnfs: ", self.sat)
+        print("Unsatisfiable cnfs: ", self.unsat)
         sat_ratio = self.sat / (self.sat + self.unsat)
-        print("satisfiable ratio: ", sat_ratio)
+        print("Satisfiable ratio: ", sat_ratio)
         
         if self.seperate:
             self.df_train = self.df
@@ -126,6 +131,8 @@ class processed_data():
         return (self.unsat / self.sat)
     
 
-
-#test = processed_data("./datatest")
-#test.process_rawdata()
+"""
+test = processed_data("./data")
+test.process_rawdata()
+print(max(global_node_values))
+"""
