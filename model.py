@@ -41,6 +41,7 @@ class network(torch.nn.Module):
         self.linear3 = Linear(int(self.linear_size/2), 1)
         
     def forward(self, x, edge_attr, edge_index, batch_index):
+        x = x.to(torch.int)
         node_num = x.shape[0]
         x = self.embedding_layer(x)
         #print("x after embedding: ", x)
@@ -49,7 +50,7 @@ class network(torch.nn.Module):
         x = self.conv_layer(x, edge_index, edge_attr)
         x = torch.relu(self.linear_layer(x))
         x = self.bn_layer(x)
-        print("x after first unit: ", x)
+        #print("x after first unit: ", x)
         global_representation = []
         for i in range(self.layers):
             x = self.conv_layers[i](x, edge_index, edge_attr)
@@ -68,33 +69,4 @@ class network(torch.nn.Module):
         
         return x
     
-
-"""
-# 定义图的信息
-edge_index = torch.tensor([[0, 0, 1, 2], [1, 2, 2, 3]], dtype=torch.long)
-x = torch.tensor([[1],[2],[3],[4]])  # 4个节点，每个节点有1个特征
-x = x.to(torch.long)
-edge_attr = torch.rand((4, 3))  # 每条边有3个特征
-
-# 图批次信息
-batch_index = torch.tensor([0, 0, 1, 1])  # 表示前两个节点属于图0，后两个节点属于图1
-
-# 创建一个Data对象
-data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, batch=batch_index)
-
-# 输出Data对象
-print("x: ", x)
-print("edge_attr: ", edge_attr)
-
-train_loader = DataLoader(data, batch_size=1)
-
-test_model = network(value_dim=7, feature_size=10, embedding_size=7, attention_heads=2, layers=1, dropout_rate=0.5, linear_size=7, edge_dim=3)
-x=test_model(x=x, edge_attr=edge_attr, edge_index=edge_index, batch_index=batch_index)
-print("result: ", x)    
-"""
-
-        
-
-
-
 

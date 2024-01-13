@@ -4,6 +4,7 @@ from tqdm import tqdm
 import numpy as np
 import torch
 import os
+import shutil
 from dataprocessing import processed_data
 
 class dataset(Dataset):
@@ -15,7 +16,9 @@ class dataset(Dataset):
         
 
     def process_data(self):
-        print("Processing data for dataset")
+        self.delete_processed_data()        
+
+        print("\nProcessing data for dataset")
         self.df = self.df.reset_index()
         
         for index, cnf in tqdm(self.df.iterrows(), total = self.df.shape[0]):
@@ -33,26 +36,36 @@ class dataset(Dataset):
             # labels
             label = torch.tensor(np.asarray(cnf["label"]), dtype=torch.int64)
             # create data
-            data = Data(x=node_features, edge_index=edge_index,edge_attr=edge_features, y=label)
+            self.data = Data(x=node_features, edge_index=edge_index,edge_attr=edge_features, y=label)
             
             if not os.path.exists(self.processed_dir):
                 os.makedirs(self.processed_dir)
                 print(f"Created directory: {self.processed_dir}")
                 
             if self.test:
-                torch.save(data, os.path.join(self.processed_dir, f'test_data_{index}.pt'))
+                torch.save(self.data, os.path.join(self.processed_dir, f'test_data_{index}.pt'))
             else:
-                torch.save(data, os.path.join(self.processed_dir, f'train_data_{index}.pt'))
+                torch.save(self.data, os.path.join(self.processed_dir, f'train_data_{index}.pt'))
                 
 
     def len(self):
-        return self.data.shape[0]
+        return self.df.shape[0]
     
     def get(self, index):
         if self.test:
             return torch.load(os.path.join(self.processed_dir, f'test_data_{index}.pt'))
         else:
             return torch.load(os.path.join(self.processed_dir, f'train_data_{index}.pt'))
+        
+    def delete_processed_data(self):
+        for filename in os.listdir(self.processed_dir):
+            file_path = os.path.join(self.processed_dir, filename)
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+            
+        print(f"\n{self.processed_dir} cleaned")
         
 """
 test_data = processed_data("./datatest")

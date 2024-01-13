@@ -1,18 +1,19 @@
+# -*- coding: utf-8 -*-
 from dataprocessing import processed_data
 import sys
 from dataset import dataset
 from train import train
 from test import test
 
-data_path = ""
+data_path = "./datatest"
 seperate = False
 
 def main():
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("Usage: python main.py <operation>")
         sys.exit(1)    
     operation = sys.argv[1]
-    model_path = sys.argv[2]
+    model_path = "./models" + sys.argv[2]
     
     data = processed_data(data_path=data_path, seperate=seperate)
     pos_weight = data.process_rawdata()

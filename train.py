@@ -20,17 +20,17 @@ linear_size = 128
 learning_rate = 0.01
 weight_decay = 1e-5
 
-epochs = 51
-early_stop = 15
+EPOCHS = 51
+EARLY_STOP = 15
 
 def train(training_dataset, pos_weight, model_path):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(f'Training on: {device}')
+    print(f'\nTraining on: {device}')
     
     # 划分训练集和验证集
     train_size = np.ceil(len(training_dataset) * 0.8)
     valid_size = len(training_dataset) - train_size
-    train_dataset, valid_dataset = torch.utils.data.random_split(dataset, [int(train_size), int(valid_size)])
+    train_dataset, valid_dataset = torch.utils.data.random_split(training_dataset, [int(train_size), int(valid_size)])
     
     train_loader = DataLoader(train_dataset, batch_size=batch_size)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size)
@@ -55,10 +55,10 @@ def train(training_dataset, pos_weight, model_path):
     train_loss_list = []
     valid_loss_list = []
     stopped = False
-    for epoch in range(epochs):
+    for epoch in range(EPOCHS):
         print("Epoch: ", epoch)
         
-        if(early_stop_cnt < early_stop):
+        if(early_stop_cnt < EARLY_STOP):
             model.train()
             
             current_train_loss = 0.0
