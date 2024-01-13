@@ -43,7 +43,7 @@ class process_raw():
                 y = 0 if dir_info[0][:3] == "UUF" else 1
 
                 # we want to see the balancing of the training dataset
-                if not (self.seperate_test and (dir_info[0] == "UF250" or dir_info[0] == "UUF250")):
+                if not (self.separate_test and (dir_info[0] == "UF250" or dir_info[0] == "UUF250")):
                     if y == 1:
                         satisfiable_num += int(dir_info[2])
                     else:
