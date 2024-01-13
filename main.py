@@ -18,10 +18,10 @@ def delete_folder_contents(folders):
 
 def main():
     delete_folder_contents(["./processed"])
-    raw_data = process_raw()
-    pos_weight = raw_data.dataset_processing()
-    dataset = SAT3Dataset(root="./", dataframe=raw_data.df)
-    training(dataset=dataset, pos_weight=pos_weight, model_name='./final_model_same_sets.pth', make_err_logs=True)
+    #raw_data = process_raw()
+    #pos_weight = raw_data.dataset_processing()
+    dataset = SAT3Dataset(root="./")
+    training(dataset=dataset, pos_weight=dataset.pos_weight, model_name='./final_model_same_sets.pth', make_err_logs=True)
 
 
 

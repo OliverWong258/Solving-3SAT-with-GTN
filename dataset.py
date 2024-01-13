@@ -5,19 +5,27 @@ import pandas as pd
 import numpy as np
 import torch
 import os
+from dataprocessing import process_raw
 
 
 class SAT3Dataset(Dataset):
-    def __init__(self, root, dataframe, test=False, transform=None, pre_transform=None):
+    def __init__(self, root, filename="data", test=False, transform=None, pre_transform=None):
+        self.root = root
+        self.filename = filename
         self.test = test
-        self.data = dataframe
+        self.data = None
+        self.pos_weight = 0
         super(SAT3Dataset, self).__init__(root, transform, pre_transform)
     
     @property
     def processed_file_names(self):
-        pass
+        return self.filename
 
     def process(self):
+        raw_data = process_raw(directory=os.path.join(self.root, self.filename))
+        self.pos_weight = raw_data.dataset_processing()
+        self.data = raw_data.df
+        
         print("Dataset loading...")
         for index, cnf in tqdm(self.data.iterrows(), total=self.data.shape[0]):
             # get node features (here we actually don't have many)
@@ -36,6 +44,7 @@ class SAT3Dataset(Dataset):
                 torch.save(data, os.path.join(self.processed_dir, f'data_test_{index}.pt'))
             else:
                 torch.save(data, os.path.join(self.processed_dir, f'data_{index}.pt'))
+                
 
     def len(self):
         return self.data.shape[0]
