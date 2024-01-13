@@ -112,7 +112,7 @@ class process_raw():
             print('Test set size: ', len(self.df_test))
         else:
             self.df_train = self.df.sample(frac=self.frac)
-            self.df_test = self.df.drop(self.df_tr.index)
+            self.df_test = self.df.drop(self.df_train.index)
             print('Training set size: ', len(self.df_tr))
             print('Test set size: ', len(self.df_test))
         
