@@ -13,7 +13,7 @@ def main():
         print("Usage: python main.py <operation>")
         sys.exit(1)    
     operation = sys.argv[1]
-    model_path = "./models" + sys.argv[2]
+    model_path = "./models/" + sys.argv[2]
     
     data = processed_data(data_path=data_path, seperate=seperate)
     pos_weight = data.process_rawdata()
