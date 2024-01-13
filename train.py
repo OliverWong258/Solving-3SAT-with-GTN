@@ -220,7 +220,7 @@ def training(dataset, pos_weight, model_name, make_err_logs=False):
                     final_valid_loss = validation_loss
                     final_train_loss = training_loss
                     # if still some progress can be made -> save the currently best model
-                    torch.save(model_name)
+                    torch.save(model, model_name)
 
                     early_stopping_counter = 0
                 else:
