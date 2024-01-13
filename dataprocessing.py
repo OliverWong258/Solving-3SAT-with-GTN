@@ -67,7 +67,7 @@ class processed_data():
                         for var in clause_vars:
                             if not var in node2idx.keys():
                                 node2idx[var] = count
-                                idx2value[count] = 1
+                                idx2value[count] = 2     # leave 1 for clause
                                 count += 1
                             else:
                                 idx2value[node2idx[var]] += 1
@@ -89,7 +89,7 @@ class processed_data():
                     for clause in clauses:
                         clause_vars = clause.split(" ")
                         clause_vars = [int(var) for var in clause_vars]
-                        node_values.append(-1) # -1 is the value for clause node
+                        node_values.append(1) # 1 is the value for clause node
                         for xi in clause_vars:
                             edges_1 += [count]
                             edges_1 += [node2idx[xi]]
