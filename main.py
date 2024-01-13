@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from dataprocessing import dataset_processing
 import sys
-from dataset import dataset
 from train import training
 from test import test
 import os, shutil
