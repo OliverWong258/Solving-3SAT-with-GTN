@@ -17,11 +17,12 @@ dictionary = {"numberOfVariables": [],
                       "label": []}
 
 class process_raw():
-    def __init__(self, directory = "./data", separate_test = False):
+    def __init__(self, directory = "./data", separate_test = False, frac=0.8):
         self.df = pd.DataFrame(dictionary)
         self.df_test = pd.DataFrame(dictionary)
         self.directory = directory
         self.separate_test = separate_test
+        self.frac = frac
         
     def dataset_processing(self):
         print("Start the data processing...\n")
@@ -55,7 +56,7 @@ class process_raw():
                 #     2*numberOfVariables - 2*numberOfVariables + numberOfClauses   : c_1 - c_m
 
                 nodes = [i for i in range(0, 2 * number_of_variables + number_of_clauses)]
-                x_i = [[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, number_of_variables)]
+                x_i = [[0.5] for _ in range(0, number_of_variables)]#[[np.random.uniform(low=-1.0, high=1.0)] for _ in range(0, number_of_variables)]
                 node_values = x_i
                 node_values += [[-i] for [i] in x_i]
                 node_values += [[1] for _ in range(0, number_of_clauses)]
@@ -126,6 +127,15 @@ class process_raw():
 
         print(f'Ratio of SAT   : {sat_ratio:.4f}')
         print(f'Ratio of UNSAT : {1.0 - sat_ratio:.4f}\n')
+        
+        if self.separate_test:
+            print(f'Training set size: {len(self.df)}')
+            print(f'Test set size: {len(self.df_test)}')
+        else:
+            self.df_tr = self.df.sample(frac=self.frac)
+            self.df_test = self.df.drop(self.df_tr.index)
+            print(f'Training set size: {len(self.df)}')
+            print(f'Test set size: {len(self.df_test)}')
 
         print("\nProcessing completed.")
 
