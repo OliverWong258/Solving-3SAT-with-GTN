@@ -24,7 +24,10 @@ class SAT3Dataset(Dataset):
     def process(self):
         raw_data = process_raw(directory=os.path.join(self.root, self.filename))
         self.pos_weight = raw_data.dataset_processing()
-        self.data = raw_data.df
+        if not self.te:
+            self.data = raw_data.df_tr
+        else:
+            self.data = raw_data.df_test
         
         print("Dataset loading...")
         for index, cnf in tqdm(self.data.iterrows(), total=self.data.shape[0]):

@@ -59,6 +59,6 @@ class GNN(torch.nn.Module):
         # output block
         x = torch.relu(self.linear1(x))
         x = torch.relu(self.linear2(x))
-        x = self.linear3(x)
+        x = torch.sigmoid(self.linear3(x))
 
         return x
