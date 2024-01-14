@@ -20,11 +20,10 @@ def main():
         print("Usage: python main.py <operation> <model_path>")
         sys.exit(1)
         
-    operation = sys.argv[1]
-    model_path = sys.argv[2]
-    model_path = "./models/" + model_path
     
     parser = argparse.ArgumentParser()
+    parser.add_argument('--o', help="option", required=True)
+    parser.add_argument('--m', help="model path", required=True)
     parser.add_argument('--d', help='data path', required=False)
     parser.add_argument('--e', help="embedding size", required=False)
     parser.add_argument('--h', help="heads num", required=False)
@@ -34,6 +33,8 @@ def main():
     parser.add_argument('--b', help="batch size", required=False)
     
     args = parser.parse_args()
+    operation = args.o
+    model_path = args.m
     data_path = args.d if args.d != None else './data'
     embedding_size = args.e if args.e != None else 64
     n_heads = args.h if args.h != None else 1
@@ -41,6 +42,8 @@ def main():
     dropout_rate = args.r if args.r != None else 0.1
     linear_size = args.ls if args.ls != None else 128
     batch_size = args.b if args.b != None else 64
+    
+    model_path = "./models/" + model_path
 
     raw_data = process_raw(directory=data_path)
     pos_weight = raw_data.dataset_processing()
