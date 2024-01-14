@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import torch
-from torch.nn import Linear, BatchNorm1d, ModuleList, ELU
+from torch.nn import Linear, BatchNorm1d, ModuleList, LeakyReLU
 from torch_geometric.nn import TransformerConv
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
 
@@ -15,7 +15,7 @@ class network(torch.nn.Module):
         self.n_heads = n_heads                  # 注意力头数
         self.dropout = dropout                  
         self.linear_size = linear_size          # 末尾全连接层维度
-        self.elu = ELU()
+        self.leaky_relu = LeakyReLU()
         
         
         self.init_conv_layer = TransformerConv(self.feature_size, self.embedding_size, heads=self.n_heads, 
@@ -40,14 +40,14 @@ class network(torch.nn.Module):
 
     def forward(self, x, edge_attr, edge_index, batch_index):
         x = self.init_conv_layer(x, edge_index, edge_attr)
-        x = self.elu(self.init_linear_layer(x))
+        x = self.leaky_relu(self.init_linear_layer(x))
         x = self.init_bn_layer(x)
 
         # holds the intermediate graph representations
         global_representation = []
         for i in range(self.n_layers):
             x = self.conv_layers[i](x, edge_index, edge_attr)
-            x = self.elu(self.linear_layers[i](x))
+            x = self.leaky_relu(self.linear_layers[i](x))
             x = self.bn_layers[i](x)
 
             global_representation.append(torch.cat([gmp(x, batch_index), gap(x, batch_index)], dim=1))
@@ -55,8 +55,8 @@ class network(torch.nn.Module):
         x = sum(global_representation)
 
         # output block
-        x = self.elu(self.linear_layer1(x))
-        x = self.elu(self.linear_layer2(x))
+        x = self.leaky_relu(self.linear_layer1(x))
+        x = self.leaky_relu(self.linear_layer2(x))
         x = self.linear_layer3(x)
 
         return x
