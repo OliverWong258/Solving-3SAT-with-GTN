@@ -127,7 +127,7 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
 
     print(f"Best training loss: {final_train_loss:.4f}\nBest " f"validation loss: {final_valid_loss:.4f}")
 
-    learning_curve(train_loss_list, valid_loss_list)
+    learning_curve(train_loss_list, valid_loss_list, model_path)
     
     return final_valid_loss
 
