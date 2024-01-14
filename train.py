@@ -10,7 +10,6 @@ warnings.filterwarnings('ignore')
 
 EPOCHS = 50
 EARLY_STOP_CNT = 15
-MIN_DELTA = 0.001
 
 
 def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_layers = 2, dropout_rate = 0.1, linear_size=128, batch_size = 64):
@@ -105,7 +104,7 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
 
             # 对比验证集和训练集损失
             if not stopped:
-                if  (best_valid_loss - validation_loss) > MIN_DELTA:
+                if  best_valid_loss > validation_loss:
                     best_valid_loss = validation_loss
                     final_valid_loss = validation_loss
                     final_train_loss = training_loss
@@ -119,7 +118,6 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
 
             scheduler.step()
         else:
-            #difference = abs(float(final_valid_loss) - float(final_train_loss))
             print("Early stopping activated, with best validation loss: ", validation_loss, end=" ")
             print("at epoch ", epoch)
             stopped = True
