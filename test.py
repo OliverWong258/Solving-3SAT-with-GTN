@@ -6,10 +6,8 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 import warnings
 warnings.filterwarnings('ignore')
 
-# ³¬²ÎÊý
-batch_size = 64
 
-def test(testing_dataset, pos_weight, model_path):
+def test(testing_dataset, pos_weight, model_path, batch_size=64):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f'Testing on: {device}')
     

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import re
 import pandas as pd
 import numpy as np
 import warnings
@@ -67,9 +66,10 @@ class process_raw():
 
                     # 从变量到取非之间的边
                     for i in range(var_num):
+                        _i = i + var_num
                         edges_1 += [i]
-                        edges_1 += [i + var_num]
-                        edges_2 += [i + var_num]
+                        edges_1 += [_i]
+                        edges_2 += [_i]
                         edges_2 += [i]
                             
                         # [1,0]代表变量间的边

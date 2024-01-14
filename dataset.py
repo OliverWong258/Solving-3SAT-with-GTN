@@ -8,12 +8,12 @@ from data_process import process_raw
 
 
 class SAT3Dataset(Dataset):
-    def __init__(self, root, filename="data", test=False, transform=None, pre_transform=None):
+    def __init__(self, root, raw_data, test=False, transform=None, pre_transform=None):
         self.root = root
-        self.filename = filename
+        self.filename = "File is not required"
+        self.raw_data = raw_data
         self.test = test
         self.data = None
-        self.pos_weight = 0
         super(SAT3Dataset, self).__init__(root, transform, pre_transform)
     
     @property
@@ -22,13 +22,10 @@ class SAT3Dataset(Dataset):
         return self.filename
 
     def process(self):
-        raw_data = process_raw(directory=os.path.join(self.root, self.filename))
-        self.pos_weight = raw_data.dataset_processing()
-        
         if not self.test:
-            self.data = raw_data.df_train.reset_index()
+            self.data = self.raw_data.df_train.reset_index()
         else:
-            self.data = raw_data.df_test.reset_index()
+            self.data = self.raw_data.df_test.reset_index()
         
         print("Loading dataset")
         for index, cnf in tqdm(self.data.iterrows(), total=self.data.shape[0]):

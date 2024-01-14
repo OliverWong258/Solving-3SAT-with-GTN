@@ -11,15 +11,8 @@ warnings.filterwarnings('ignore')
 EPOCHS = 50
 EARLY_STOP_CNT = 30
 
-# ³¬²ÎÊý
-embedding_size = 64
-n_heads = 1
-n_layers = 2
-dropout_rate = 0.1
-dense_neurons = 128
-batch_size = 64
 
-def train(dataset, pos_weight, model_path):
+def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_layers = 2, dropout_rate = 0.1, linear_size=128, batch_size = 64):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('Training on: ', device)
 
@@ -36,7 +29,7 @@ def train(dataset, pos_weight, model_path):
     model_edge_dim = train_dataset[0].edge_attr.shape[1]
 
     model = network(feature_size=train_dataset[0].x.shape[1], model_edge_dim=model_edge_dim, embedding_size=embedding_size, 
-                n_heads=n_heads, layers=n_layers, dropout=dropout_rate, linear_size=dense_neurons)
+                n_heads=n_heads, layers=n_layers, dropout=dropout_rate, linear_size=linear_size)
     model = model.to(device)
 
     weight = torch.tensor(pos_weight, dtype=torch.float32).to(device)
