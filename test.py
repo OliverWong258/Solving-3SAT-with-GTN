@@ -13,7 +13,7 @@ def test(testing_dataset, pos_weight, model_path, batch_size=64):
     
     test_loader = DataLoader(testing_dataset, batch_size=batch_size)
     
-    model = torch.load(model_path)
+    model = torch.load("./models/"+model_path)
     model.to(device)
     model.eval()
     pos_weight = torch.tensor(pos_weight, dtype=torch.float32).to(device)

@@ -41,7 +41,6 @@ def main():
     linear_size = args.ls if args.ls != None else 128
     batch_size = args.b if args.b != None else 64
     
-    model_path = "./models/" + model_path
 
     raw_data = process_raw(directory=data_path)
     pos_weight = raw_data.dataset_processing()

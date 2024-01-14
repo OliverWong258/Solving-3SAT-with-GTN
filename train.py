@@ -111,7 +111,7 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
                     final_train_loss = training_loss
                     
                     # 保存当前模型
-                    torch.save(model, model_path)
+                    torch.save(model, "./models/"+model_path)
 
                     early_stop_cnt = 0
                 else:
