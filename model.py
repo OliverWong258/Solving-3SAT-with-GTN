@@ -56,7 +56,7 @@ class network(torch.nn.Module):
 
         # output block
         x = torch.relu(self.linear_layer1(x))
-        x = self.torch.relu(self.linear_layer2(x))
+        x = torch.relu(self.linear_layer2(x))
         x = self.linear_layer3(x)
 
         return x
