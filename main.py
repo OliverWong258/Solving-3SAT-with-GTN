@@ -41,7 +41,8 @@ def main():
     dropout_rate = float(args.r) if args.r != None else float(0.1)
     linear_size = int(args.ls) if args.ls != None else int(128)
     batch_size = int(args.b) if args.b != None else int(64)
-    separate_test = bool(args.s)
+    separate_test = False if args.s == 0 else True
+    print(separate_test)
     
 
     raw_data = process_raw(directory=data_path, separate=separate_test)
