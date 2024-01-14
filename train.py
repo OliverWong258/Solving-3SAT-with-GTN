@@ -132,7 +132,7 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
     return final_valid_loss
 
 
-def learning_curve(train_loss, valid_loss):
+def learning_curve(train_loss, valid_loss, model_path):
     
     epochs = list(range(1, len(train_loss) + 1))
 
@@ -148,5 +148,5 @@ def learning_curve(train_loss, valid_loss):
     if not os.path.exists("./plots"):
         os.mkdir("./plots")
         
-    plt.savefig('./plots/train_valid_loss.png')
+    plt.savefig('./plots/'+model_path+'_train_valid_loss.png')
     plt.close()
