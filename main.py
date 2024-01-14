@@ -34,6 +34,7 @@ def main():
     
     args = parser.parse_args()
     model_path = args.m
+    separate_test = False if int(args.s) == 0 else True
     data_path = args.d if args.d != None else './data'
     embedding_size = int(args.e) if args.e != None else int(64)
     n_heads = int(args.h) if args.h != None else int(1)
@@ -41,8 +42,8 @@ def main():
     dropout_rate = float(args.r) if args.r != None else float(0.1)
     linear_size = int(args.ls) if args.ls != None else int(128)
     batch_size = int(args.b) if args.b != None else int(64)
-    separate_test = False if args.s == 0 else True
-    print(separate_test)
+
+    print("Separate test: ", separate_test)
     
 
     raw_data = process_raw(directory=data_path, separate=separate_test)
