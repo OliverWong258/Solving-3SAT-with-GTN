@@ -73,7 +73,7 @@ class process_raw():
                         edges_2 += [i]
                             
                         # [1,0]代表变量间的边
-                        edge_attr += [[1, 0]]
+                        edge_attr += [[1, 0], [1,0]] # here
 
                     cnt = 0
                     for clause in clauses:
@@ -87,7 +87,7 @@ class process_raw():
                             edges_2 += tmp
                             edges_2 += [cnt + 2*var_num]
 
-                            edge_attr += [[0, 1]]
+                            edge_attr += [[0, 1], [0,1]] # here
 
                         cnt += 1
 
@@ -99,7 +99,7 @@ class process_raw():
                                                      [edge_attr, edge_attr], [label]]
                     else:
                         self.df.loc[len(self.df)] = [ node_values, [edges_1, edges_2],
-                                           [edge_attr, edge_attr], [label]]
+                                           [edge_attr], [label]] # here
 
         print('Satisfiable: ', num_sat)
         print('Unsatisfiable: ', num_unsat)
