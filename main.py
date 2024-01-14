@@ -34,12 +34,12 @@ def main():
     args = parser.parse_args()
     model_path = args.m
     data_path = args.d if args.d != None else './data'
-    embedding_size = args.e if args.e != None else 64
-    n_heads = args.h if args.h != None else 1
-    n_layers = args.l if args.l != None else 2
-    dropout_rate = args.r if args.r != None else 0.1
-    linear_size = args.ls if args.ls != None else 128
-    batch_size = args.b if args.b != None else 64
+    embedding_size = int(args.e) if args.e != None else int(64)
+    n_heads = int(args.h) if args.h != None else int(1)
+    n_layers = int(args.l) if args.l != None else int(2)
+    dropout_rate = float(args.r) if args.r != None else float(0.1)
+    linear_size = int(args.ls) if args.ls != None else int(128)
+    batch_size = int(args.b) if args.b != None else int(64)
     
 
     raw_data = process_raw(directory=data_path)
