@@ -21,6 +21,7 @@ class SAT3Dataset(Dataset):
         return self.filename
 
     def process(self):
+        self.delete_folder_contents()
         if not self.test:
             self.data = self.raw_data.df_train.reset_index()
         else:
