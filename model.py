@@ -47,7 +47,7 @@ class network(torch.nn.Module):
         global_representation = []
         for i in range(self.n_layers):
             x = self.conv_layers[i](x, edge_index, edge_attr)
-            x = self.torch.relu(self.linear_layers[i](x))
+            x = torch.relu(self.linear_layers[i](x))
             x = self.bn_layers[i](x)
 
             global_representation.append(torch.cat([gmp(x, batch_index), gap(x, batch_index)], dim=1))
