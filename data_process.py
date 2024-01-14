@@ -96,7 +96,7 @@ class process_raw():
 
                     if self.separate and (info[0] == "UF250" or info[0] == "UUF250"):
                         self.df_test.loc[len(self.df_test)] = [node_values, [edges_1, edges_2],
-                                                     [edge_attr, edge_attr], [label]]
+                                                     [edge_attr], [label]] # here
                     else:
                         self.df.loc[len(self.df)] = [ node_values, [edges_1, edges_2],
                                            [edge_attr], [label]] # here
