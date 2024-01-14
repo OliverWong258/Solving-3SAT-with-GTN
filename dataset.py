@@ -4,7 +4,6 @@ from tqdm import tqdm
 import numpy as np
 import torch
 import os, shutil
-from data_process import process_raw
 
 
 class SAT3Dataset(Dataset):

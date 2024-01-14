@@ -16,8 +16,8 @@ def main():
     if not os.path.exists("./models"):
         os.mkdir("./models")
         
-    if len(sys.argv) < 2:
-        print("Usage: python main.py <model_path>")
+    if len(sys.argv) < 3:
+        print("Usage: python main.py --m <model_path> --s <separate>")
         sys.exit(1)
         
     
@@ -30,6 +30,7 @@ def main():
     parser.add_argument('--r', help="dropout rate", required=False)
     parser.add_argument('--ls', help="linear size", required=False)
     parser.add_argument('--b', help="batch size", required=False)
+    parser.add_argument('--s', help="separate", required=True)
     
     args = parser.parse_args()
     model_path = args.m
@@ -40,9 +41,10 @@ def main():
     dropout_rate = float(args.r) if args.r != None else float(0.1)
     linear_size = int(args.ls) if args.ls != None else int(128)
     batch_size = int(args.b) if args.b != None else int(64)
+    separate_test = bool(args.s)
     
 
-    raw_data = process_raw(directory=data_path)
+    raw_data = process_raw(directory=data_path, separate=separate_test)
     pos_weight = raw_data.dataset_processing()
     
     
