@@ -45,7 +45,8 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
     final_valid_loss = 50.0    
     final_train_loss = 50.0     
     early_stop_cnt = 0
-    loss_difference = 1.0    
+    loss_difference = 1.0
+    best_valid_loss = 50.0
 
     # the following are just for reporting reasons
     valid_loss_list = []
@@ -104,9 +105,10 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
 
             # 对比验证集和训练集损失
             if not stopped:
-                difference = abs(float(validation_loss) - float(training_loss))
-                if difference < loss_difference:
-                    loss_difference = difference
+                #difference = abs(float(validation_loss) - float(training_loss))
+                if  validation_loss < best_valid_loss:                       #difference < loss_difference:
+                    #loss_difference = difference
+                    best_valid_loss = validation_loss
                     final_valid_loss = validation_loss
                     final_train_loss = training_loss
                     
@@ -119,8 +121,8 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
 
             scheduler.step()
         else:
-            difference = abs(float(final_valid_loss) - float(final_train_loss))
-            print("Early stopping activated, with training and validation loss difference: ", difference, end=" ")
+            #difference = abs(float(final_valid_loss) - float(final_train_loss))
+            print("Early stopping activated, with best validation loss: ", validation_loss, end=" ")
             print("at epoch ", epoch)
             stopped = True
             early_stop_cnt = 0
