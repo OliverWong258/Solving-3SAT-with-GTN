@@ -40,14 +40,14 @@ class network(torch.nn.Module):
 
     def forward(self, x, edge_attr, edge_index, batch_index):
         x = self.init_conv_layer(x, edge_index, edge_attr)
-        x = self.leaky_relu(self.init_linear_layer(x))
+        x = torch.relu(self.init_linear_layer(x))
         x = self.init_bn_layer(x)
 
         # holds the intermediate graph representations
         global_representation = []
         for i in range(self.n_layers):
             x = self.conv_layers[i](x, edge_index, edge_attr)
-            x = self.leaky_relu(self.linear_layers[i](x))
+            x = self.torch.relu(self.linear_layers[i](x))
             x = self.bn_layers[i](x)
 
             global_representation.append(torch.cat([gmp(x, batch_index), gap(x, batch_index)], dim=1))
@@ -55,8 +55,8 @@ class network(torch.nn.Module):
         x = sum(global_representation)
 
         # output block
-        x = self.leaky_relu(self.linear_layer1(x))
-        x = self.leaky_relu(self.linear_layer2(x))
+        x = torch.relu(self.linear_layer1(x))
+        x = self.torch.relu(self.linear_layer2(x))
         x = self.linear_layer3(x)
 
         return x
