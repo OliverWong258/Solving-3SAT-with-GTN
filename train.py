@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 from model import network
 import warnings
 import os
-torch.manual_seed(15)
-torch.cuda.manual_seed(15)
 warnings.filterwarnings('ignore')
 
 EPOCHS = 50
@@ -19,7 +17,6 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
     print('Training on: ', device)
 
     # 划分训练集和验证集
-    torch.manual_seed(15)
     train_set_size = np.ceil(len(dataset) * 0.8)
     valid_set_size = len(dataset) - train_set_size
 
@@ -66,7 +63,7 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
             model.train()
             training_loss = 0.0
             train_step = 0
-            torch.manual_seed(15)
+
             for batch in train_loader:
                 batch.to(device)
                 optimizer.zero_grad()
@@ -89,7 +86,7 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
             model.eval()
             validation_loss = 0.0
             valid_step = 0
-            torch.manual_seed(15)
+
             for batch in valid_loader:
                 batch.to(device)
 
