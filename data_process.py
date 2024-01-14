@@ -73,7 +73,7 @@ class process_raw():
                         edges_2 += [i]
                             
                         # [1,0]代表变量间的边
-                        edge_attr += [[1, 0], [1,0]] # here
+                        edge_attr += [[1, 0]]
 
                     cnt = 0
                     for clause in clauses:
@@ -87,7 +87,7 @@ class process_raw():
                             edges_2 += tmp
                             edges_2 += [cnt + 2*var_num]
 
-                            edge_attr += [[0, 1], [0,1]] # here
+                            edge_attr += [[0, 1]]
 
                         cnt += 1
 
@@ -96,10 +96,10 @@ class process_raw():
 
                     if self.separate and (info[0] == "UF250" or info[0] == "UUF250"):
                         self.df_test.loc[len(self.df_test)] = [node_values, [edges_1, edges_2],
-                                                     [edge_attr], [label]] # here
+                                                     [edge_attr, edge_attr], [label]]
                     else:
                         self.df.loc[len(self.df)] = [ node_values, [edges_1, edges_2],
-                                           [edge_attr], [label]] # here
+                                           [edge_attr, edge_attr], [label]]
 
         print('Satisfiable: ', num_sat)
         print('Unsatisfiable: ', num_unsat)
