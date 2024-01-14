@@ -38,7 +38,7 @@ class process_raw():
                 label = 1 if info[0][1] == "F" else 0
 
                 # we want to see the balancing of the training dataset
-                if not (self.separate and (info[0] == "UF250" or dir[0] == "UUF250")):
+                if not (self.separate and (info[0] == "UF250" or info[0] == "UUF250")):
                     if label == 1:
                         num_sat += int(info[2])
                     else:
