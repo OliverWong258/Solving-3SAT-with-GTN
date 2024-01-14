@@ -3,7 +3,7 @@ import torch
 from torch.nn import Linear, BatchNorm1d, ModuleList
 from torch_geometric.nn import TransformerConv
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
-
+torch.manual_seed(15)
 
 class network(torch.nn.Module):
     def __init__(self, feature_size, model_edge_dim, embedding_size, n_heads, layers, dropout, linear_size):

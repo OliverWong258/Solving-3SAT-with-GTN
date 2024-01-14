@@ -16,13 +16,12 @@ def main():
     if not os.path.exists("./models"):
         os.mkdir("./models")
         
-    if len(sys.argv) < 3:
-        print("Usage: python main.py <operation> <model_path>")
+    if len(sys.argv) < 2:
+        print("Usage: python main.py <model_path>")
         sys.exit(1)
         
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--o', help="option", required=True)
     parser.add_argument('--m', help="model path", required=True)
     parser.add_argument('--d', help='data path', required=False)
     parser.add_argument('--e', help="embedding size", required=False)
@@ -33,7 +32,6 @@ def main():
     parser.add_argument('--b', help="batch size", required=False)
     
     args = parser.parse_args()
-    operation = args.o
     model_path = args.m
     data_path = args.d if args.d != None else './data'
     embedding_size = args.e if args.e != None else 64
@@ -49,14 +47,14 @@ def main():
     pos_weight = raw_data.dataset_processing()
     
     
-    if operation == "train":
-        dataset = SAT3Dataset(root="./", raw_data=raw_data, test=False)
-        train(dataset=dataset, pos_weight=pos_weight, model_path=model_path, embedding_size=embedding_size, n_heads=n_heads, n_layers=n_layers,
-              dropout_rate=dropout_rate, linear_size=linear_size, batch_size=batch_size)
+    # 训练模型
+    dataset = SAT3Dataset(root="./", raw_data=raw_data, test=False)
+    train(dataset=dataset, pos_weight=pos_weight, model_path=model_path, embedding_size=embedding_size, n_heads=n_heads, n_layers=n_layers,
+            dropout_rate=dropout_rate, linear_size=linear_size, batch_size=batch_size)
         
-    elif operation == "test":
-        dataset = SAT3Dataset(root="./", raw_data=raw_data, test=True)
-        test(testing_dataset=dataset, pos_weight=pos_weight, model_path=model_path, batch_size=batch_size)
+    # 测试模型
+    dataset = SAT3Dataset(root="./", raw_data=raw_data, test=True)
+    test(testing_dataset=dataset, pos_weight=pos_weight, model_path=model_path, batch_size=batch_size)
 
 
 

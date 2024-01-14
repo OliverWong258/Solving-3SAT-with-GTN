@@ -4,6 +4,8 @@ from torch_geometric.loader import DataLoader
 import numpy as np
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 import warnings
+torch.manual_seed(15)
+torch.cuda.manual_seed(15)
 warnings.filterwarnings('ignore')
 
 
@@ -25,6 +27,7 @@ def test(testing_dataset, pos_weight, model_path, batch_size=64):
     predictions = []
     labels = []
     
+    torch.manual_seed(15)
     for batch in test_loader:
         batch.to(device)
         prediction = model(batch.x.float(), batch.edge_attr.float(), batch.edge_index, batch.batch)
