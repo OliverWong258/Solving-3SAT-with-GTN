@@ -15,7 +15,7 @@ class network(torch.nn.Module):
         self.n_heads = n_heads                  # 注意力头数
         self.dropout = dropout                  
         self.linear_size = linear_size          # 末尾全连接层维度
-        self.leaky_relu = LeakyReLU()
+        self.leaky_relu = LeakyReLU(0.01)
         
         
         self.init_conv_layer = TransformerConv(self.feature_size, self.embedding_size, heads=self.n_heads, 
