@@ -12,11 +12,11 @@ EPOCHS = 50
 EARLY_STOP_CNT = 15
 
 
-def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_layers = 2, dropout_rate = 0.1, linear_size=128, batch_size = 64):
+def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 2, n_layers = 2, dropout_rate = 0.1, linear_size=128, batch_size = 64):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('Training on: ', device)
 
-    # »®·ÖÑµÁ·¼¯ºÍÑéÖ¤¼¯
+    # åˆ’åˆ†è®­ç»ƒé›†å’ŒéªŒè¯é›†
     train_set_size = np.ceil(len(dataset) * 0.8)
     valid_set_size = len(dataset) - train_set_size
 
@@ -34,7 +34,7 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
 
     weight = torch.tensor(pos_weight, dtype=torch.float32).to(device)
 
-    # ËğÊ§º¯Êı
+    # æŸå¤±å‡½æ•°
     criterion = torch.nn.BCEWithLogitsLoss(pos_weight=weight)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-5, amsgrad=False)
@@ -82,7 +82,7 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
             print("Training Loss: ", training_loss)
             train_loss_list.append(training_loss)
 
-            # ¼ÆËãÑéÖ¤¼¯ÉÏµÄËğÊ§
+            # è®¡ç®—éªŒè¯é›†ä¸Šçš„æŸå¤±
             model.eval()
             validation_loss = 0.0
             valid_step = 0
@@ -102,14 +102,14 @@ def train(dataset, pos_weight, model_path, embedding_size = 64, n_heads = 1, n_l
             valid_loss_list.append(validation_loss)
 
 
-            # ¶Ô±ÈÑéÖ¤¼¯ºÍÑµÁ·¼¯ËğÊ§
+            # å¯¹æ¯”éªŒè¯é›†å’Œè®­ç»ƒé›†æŸå¤±
             if not stopped:
                 if  best_valid_loss > validation_loss:
                     best_valid_loss = validation_loss
                     final_valid_loss = validation_loss
                     final_train_loss = training_loss
                     
-                    # ±£´æµ±Ç°Ä£ĞÍ
+                    # ä¿å­˜å½“å‰æ¨¡å‹
                     torch.save(model, "./models/"+model_path)
 
                     early_stop_cnt = 0
