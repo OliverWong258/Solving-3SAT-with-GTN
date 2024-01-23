@@ -7,7 +7,7 @@ Here, `<model_path>` is the name of the saved model, and `<separate>` indicates 
 Other optional parameters include:
 - `--d` Path to training data, default is `./data`
 - `--e` Model embedding dimension
-- `--h` Number of attention heads in the model
+- `--h` Number of attention heads in the model(the default is 2)
 - `--l` Number of layers in the model
 - `--r` Dropout rate
 - `--ls` Neuron density of the final linear layer
