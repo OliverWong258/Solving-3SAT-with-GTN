@@ -1,17 +1,16 @@
-在命令行输入python main.py --m <model_path> --s <separate>运行。
+This is an adjustment of [SAT-Solver-usingNNs](https://github.com/tatiana-boura/SAT-Solver-using-NNs/tree/main), primarily involving adjustments in the number of attention heads in the self-attention mechanism and modifications to the activation function of the neural network. These changes aim to enhance the model's performance, especially in scenarios where there is a significant difference in the complexity of training and testing data.
 
-其中，<model_path>是保存的模型名，<separate>代表是否要分离测试，0代表否，1代表是。
+To run the program, enter `python main.py --m <model_path> --s <separate>` in the command line.
 
-其他可选参数：
---d 训练数据路径，默认为./data
---e 模型嵌入维度
---h 模型注意力头数目
---l 模型层数
---r dropout率
---ls 末尾线性层的神经元密度
---b 批次大小
+Here, `<model_path>` is the name of the saved model, and `<separate>` indicates whether to conduct separate testing, with 0 for no and 1 for yes.
 
-输出的模型文件保存在./models目录下，学习曲线保存在./plots目录下。
+Other optional parameters include:
+- `--d` Path to training data, default is `./data`
+- `--e` Model embedding dimension
+- `--h` Number of attention heads in the model
+- `--l` Number of layers in the model
+- `--r` Dropout rate
+- `--ls` Neuron density of the final linear layer
+- `--b` Batch size
 
-运行环境：除了基础的python库和Pytorch库，还需要安装torch_geometric
-
+The output model files are saved in the `./models` directory, and the learning curves are saved in the `./plots` directory.
