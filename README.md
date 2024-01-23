@@ -1,4 +1,4 @@
-This is an adjustment of [SAT-Solver-usingNNs](https://github.com/tatiana-boura/SAT-Solver-using-NNs/tree/main), primarily involving adjustments in the number of attention heads in the self-attention mechanism and modifications to the activation function of the neural network. These changes aim to enhance the model's performance, especially in scenarios where there is a significant difference in the complexity of training and testing data.
+This is an adjustment of the GTN model from [SAT-Solver-usingNNs](https://github.com/tatiana-boura/SAT-Solver-using-NNs/tree/main), primarily involving adjustments in the number of attention heads in the self-attention mechanism and modifications to the activation function of the neural network. These changes aim to enhance the model's performance, especially in scenarios where there is a significant difference in the complexity of training and testing data.
 
 To run the program, enter `python main.py --m <model_path> --s <separate>` in the command line.
 
